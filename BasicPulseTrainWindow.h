@@ -21,14 +21,18 @@ class BasicPulseTrainWindow : public QWidget
     QLabel* m_labelPeriod;
     QLabel* m_labelNumPulses;
     QLabel* m_labelDuration;
+    QLabel* m_labelIntertrainInterval;
+    QLabel* m_labelNumTrains;
     QLabel* m_labelState;
 
     // row contents
     QLabel* m_labelChannels[numChannels];
     QDoubleSpinBox* m_dspinPulseWidths[numChannels];
     QDoubleSpinBox* m_dspinPeriods[numChannels];
-    QDoubleSpinBox* m_dspinNumPulses[numChannels];
+    QSpinBox* m_spinNumPulses[numChannels];
     QDoubleSpinBox* m_dspinDurations[numChannels];
+    QDoubleSpinBox* m_dspinIntertrainInterval[numChannels];
+    QSpinBox* m_spinNumTrains[numChannels];
     QLabel* m_labelStates[numChannels];
     QPushButton* m_buttonStartStops[numChannels];
     

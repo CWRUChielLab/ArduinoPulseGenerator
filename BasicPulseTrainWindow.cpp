@@ -26,6 +26,10 @@ BasicPulseTrainWindow::BasicPulseTrainWindow(QWidget* parent) :
     tableLayout->addWidget(m_labelNumPulses, row, col++);
     m_labelDuration = new QLabel("Duration (s)");
     tableLayout->addWidget(m_labelDuration, row, col++);
+    m_labelIntertrainInterval = new QLabel("Intertrain Gap (s)");
+    tableLayout->addWidget(m_labelIntertrainInterval, row, col++);
+    m_labelNumTrains = new QLabel("Num Trains");
+    tableLayout->addWidget(m_labelNumTrains, row, col++);
     m_labelState = new QLabel("State");
     tableLayout->addWidget(m_labelState, row, col++);
 
@@ -40,13 +44,18 @@ BasicPulseTrainWindow::BasicPulseTrainWindow(QWidget* parent) :
         tableLayout->addWidget(m_dspinPulseWidths[chan], row, col++);
         m_dspinPeriods[chan] = new QDoubleSpinBox();
         tableLayout->addWidget(m_dspinPeriods[chan], row, col++);
-        m_dspinNumPulses[chan] = new QDoubleSpinBox();
-        tableLayout->addWidget(m_dspinNumPulses[chan], row, col++);
+        m_spinNumPulses[chan] = new QSpinBox();
+        tableLayout->addWidget(m_spinNumPulses[chan], row, col++);
         m_dspinDurations[chan] = new QDoubleSpinBox();
         tableLayout->addWidget(m_dspinDurations[chan], row, col++);
-        m_labelStates[chan] = new QLabel();
+        m_dspinIntertrainInterval[chan] = new QDoubleSpinBox();
+        tableLayout->addWidget(m_dspinIntertrainInterval[chan], row, col++);
+        m_spinNumTrains[chan] = new QSpinBox();
+        tableLayout->addWidget(m_spinNumTrains[chan], row, col++);
+        m_labelStates[chan] = new QLabel("initializing...      ");
         tableLayout->addWidget(m_labelStates[chan], row, col++);
-        m_buttonStartStops[chan] = new QPushButton();
+        m_buttonStartStops[chan] = new QPushButton("Start");
+        m_buttonStartStops[chan]->setEnabled(false);
         tableLayout->addWidget(m_buttonStartStops[chan], row, col++);
     }
 
