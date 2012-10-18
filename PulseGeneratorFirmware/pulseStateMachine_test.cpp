@@ -1,6 +1,7 @@
 #include <iostream>
 #include <assert.h>
 #include "pulseStateMachine.h"
+#include "string.h"
 
 using std::cout;
 using std::endl;
@@ -55,8 +56,8 @@ void runPulseChannelTests() {
 }
 
 
-void runPulseStateCommandTests() {
-    // verify that parsing works
+void runPulseStateCommandParsingTests() {
+    // Basic parsing tests
     {
         PulseStateCommand c;
         const char* error;
@@ -89,20 +90,20 @@ void runPulseStateCommandTests() {
         PulseStateCommand c;
         const char* error;
         // utf-8 micro and utf-8 greek lowercase mu
-        c.parseFromString("change channel 4 to repeat 13 \u00B5s on 23 \u03BCs off", &error);
+        c.parseFromString("change  channel  2  to  repeat  13  \u00B5s  on  23  \u03BCs  off", &error);
         assert(error == NULL);
         assert(c.type == PulseStateCommand::setChannel);
-        assert(c.channel == 4);
+        assert(c.channel == 2);
         assert(c.onTime == 13);
         assert(c.offTime == 23);
     }
     {
         PulseStateCommand c;
         const char* error;
-        c.parseFromString("turn off channel 5", &error);
+        c.parseFromString("turn off channel 4", &error);
         assert(error == NULL);
         assert(c.type == PulseStateCommand::setChannel);
-        assert(c.channel == 5);
+        assert(c.channel == 4);
         assert(c.onTime == 0);
         assert(c.offTime == forever);
     }
@@ -124,15 +125,51 @@ void runPulseStateCommandTests() {
         assert(c.type == PulseStateCommand::wait);
         assert(c.waitTime == 273000);
     }
+
+    // Error tests
+    {
+        PulseStateCommand c;
+        const char* error;
+        assert(numChannels == 4);
+        c.parseFromString("turn off channel 5", &error);
+        assert(error && strcmp(error, "Channel number must be between 1 and 4") == 0);
+    }
+    {
+        PulseStateCommand c;
+        const char* error;
+        c.parseFromString("change channel 0 to repeat 12 ms on 18 s off", &error);
+        assert(error && strcmp(error, "Channel number must be between 1 and 4") == 0);
+    }
+    // TODO: tests for other error messages.
+
     // cout << "Error: " << (error ? error : "none") << endl;
+}
+
+
+void runPulseStateCommandExecuteTests() {
+    const char* error;
+
+    // verify that running works
+    {
+        PulseStateCommand c;
+        Microseconds remainingTime = 100;
+        PulseChannel p[4];
+        Microseconds timeAvailable = 100;
+        c.parseFromString("end", &error);
+
+        c.execute(p, &remainingTime);
+        assert(remainingTime == 0);
+    }
 }
 
 
 int main() {
     cout << "running PulseChannel tests\n";
     runPulseChannelTests();
-    cout << "running PulseStateCommand tests\n";
-    runPulseStateCommandTests();
+    cout << "running PulseStateCommand parsing tests\n";
+    runPulseStateCommandParsingTests();
+    cout << "running PulseStateCommand execute tests\n";
+    runPulseStateCommandExecuteTests();
     cout << "**************** Tests passed! ****************\n";
     return 0;
 }

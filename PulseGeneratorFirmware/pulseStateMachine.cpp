@@ -145,6 +145,10 @@ void PulseStateCommand::parseFromString(const char* input, const char** error) {
             *error = "expected channel number";
             return;
         }
+        if (val > numChannels || val == 0) {
+            *error = "Channel number must be between 1 and 4";
+            return;
+        }
         channel = val;
 
         consumeWhitespace(input, &index);
@@ -220,6 +224,10 @@ void PulseStateCommand::parseFromString(const char* input, const char** error) {
             *error = "expected channel number";
             return;
         }
+        if (val > numChannels || val == 0) {
+            *error = "Channel number must be between 1 and 4";
+            return;
+        }
         channel = val;
 
     } else if (input[index] == 'w') {
@@ -243,4 +251,9 @@ void PulseStateCommand::parseFromString(const char* input, const char** error) {
 
     *error = NULL;
 }
+
+
+void PulseStateCommand::execute(PulseChannel* channels, Microseconds* timeAvailable) {
+    *timeAvailable = 0;
+};
 
