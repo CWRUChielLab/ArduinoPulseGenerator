@@ -9,7 +9,7 @@ typedef uint32_t Microseconds;
 const Microseconds forever = 0xFFFFFFFF;
 
 // Maximum number of pulse channels supported by the firmware.
-const int numChannels = 4;
+const unsigned numChannels = 4;
 
 // Stores the state of a single channel that can generate a square wave.
 // call advanceTime to update the on/off state to reflect where you are
@@ -39,11 +39,11 @@ class PulseChannel {
         // sets how long the channel should spend in the on and off state
         // for each period of the square wave.  Note that the sum of the
         // two times is the period of the square wave.
-        Microseconds setOnOffTime(Microseconds on, Microseconds off);
+        void setOnOffTime(Microseconds on, Microseconds off);
 
         // update the on/off state of the channel to reflect the passage of
         // dt microseconds of time.
-        bool advanceTime(Microseconds dt);
+        void advanceTime(Microseconds dt);
 };
 
 
@@ -107,17 +107,25 @@ struct PulseStateCommand {
         // will point to a human-readable string describing the parsing error.
         void parseFromString(const char* input, const char** error);
 
-        // Runs the command, updating the on/off times for the channels as
-        // needed.  The timeAvailable parameter should initially contain the
-        // amount of time that has passed but has not been accounted for.
+        // Runs the command, updating the on/off times for the channels
+        // (passed in the channels parameter) as needed.
+        //
+        // The timeInState parameter should contain the total
+        // time spent in previous ticks since this state has been entered,
+        // e.g. if we've used up 130 us in previous ticks without finishing
+        // this command, this should be 130.
+        //
+        // The timeAvailable parameter should initially contain the amount of
+        // time that has passed this tick but has not been accounted for.
         // After the call, this will be reduced by the amount of time spent
-        // executing the command.  For example, if the command was
-        // "wait 100 us" and initially 310 us of time was available, the
-        // timeAvailable parameter would initially be 310 us before the call
-        // and 210 us after the call.  If time available is 0 after the call,
-        // the instruction has not completed yet and should be called again
-        // when more time is available.
-        void execute(PulseChannel* channels, Microseconds* timeAvailable);
+        // executing the command.  For example, if the command was "wait 100
+        // us" and initially 310 us of time was available, the timeAvailable
+        // parameter would initially be 310 us before the call and 210 us after
+        // the call.
+        //
+        // The return value is true iff the command was completed this tick.
+        bool execute(PulseChannel* channels, Microseconds timeInState,
+                Microseconds* timeAvailable);
 };
 
 #endif /* PULSESTATEMACHINE_H */

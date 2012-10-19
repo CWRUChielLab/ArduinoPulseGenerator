@@ -9,7 +9,7 @@ PulseChannel::PulseChannel()
 }
 
 
-Microseconds PulseChannel::setOnOffTime(Microseconds on, Microseconds off) {
+void PulseChannel::setOnOffTime(Microseconds on, Microseconds off) {
     m_stateTime[true] = on;
     m_stateTime[false] = off;
     m_on = on > 0;
@@ -17,7 +17,7 @@ Microseconds PulseChannel::setOnOffTime(Microseconds on, Microseconds off) {
 }
 
 
-bool PulseChannel::advanceTime(Microseconds dt) {
+void PulseChannel::advanceTime(Microseconds dt) {
     m_timeInState += dt;
 
     while (m_timeInState >= m_stateTime[m_on]) {
@@ -71,7 +71,6 @@ static bool consumeUInt32(const char* input, int* index, uint32_t* result) {
 
 
 static bool consumeTime(const char* input, int* index, Microseconds* result) {
-    uint32_t val = 0;
     const char* expectedToken;
 
     if (!consumeUInt32(input, index, result)) {
@@ -253,7 +252,26 @@ void PulseStateCommand::parseFromString(const char* input, const char** error) {
 }
 
 
-void PulseStateCommand::execute(PulseChannel* channels, Microseconds* timeAvailable) {
-    *timeAvailable = 0;
+bool PulseStateCommand::execute(PulseChannel* channels,
+        Microseconds timeInState, Microseconds* timeAvailable) {
+    switch (type) {
+        default:
+        case end:
+            *timeAvailable = 0;
+            return false;
+
+        case setChannel:
+            channels[channel - 1].setOnOffTime(onTime, offTime);
+            return true;
+
+        case wait:
+            if (waitTime > *timeAvailable + timeInState) {
+                *timeAvailable = 0;
+                return false;
+            } else {
+                *timeAvailable -= waitTime - timeInState;
+                return true;
+            }
+    }
 };
 

@@ -147,18 +147,53 @@ void runPulseStateCommandParsingTests() {
 
 
 void runPulseStateCommandExecuteTests() {
-    const char* error;
+    bool completed;
 
-    // verify that running works
+    // should be able to run commands
     {
         PulseStateCommand c;
         Microseconds remainingTime = 100;
-        PulseChannel p[4];
-        Microseconds timeAvailable = 100;
-        c.parseFromString("end", &error);
 
-        c.execute(p, &remainingTime);
+        c.type = PulseStateCommand::end;
+
+        completed = c.execute(NULL, 0, &remainingTime);
         assert(remainingTime == 0);
+        assert(!completed);
+
+        remainingTime = 100;
+        completed = c.execute(NULL, 100, &remainingTime);
+        assert(remainingTime == 0);
+        assert(!completed);
+    }
+    {
+        PulseStateCommand c;
+        PulseChannel p[numChannels];
+
+        c.type = PulseStateCommand::setChannel;
+        c.channel = 1;
+        c.onTime = 12;
+        c.offTime = 10;
+
+        completed = c.execute(p, 0, NULL);
+        assert(p[0].onTime() == 12);
+        assert(p[0].offTime() == 10);
+        assert(completed);
+    }
+    {
+        PulseStateCommand c;
+        Microseconds remainingTime = 100;
+
+        c.type = PulseStateCommand::wait;
+        c.waitTime = 120;
+
+        completed = c.execute(NULL, 0, &remainingTime);
+        assert(remainingTime == 0);
+        assert(!completed);
+
+        remainingTime = 70;
+        completed = c.execute(NULL, 100, &remainingTime);
+        assert(remainingTime == 50);
+        assert(completed);
     }
 }
 
