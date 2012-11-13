@@ -3,12 +3,12 @@
 #include <QSlider>
 #include <QSpinBox>
 
-#include "BasicPulseTrainWindow.h"
+#include "ProgramGuiWindow.h"
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    BasicPulseTrainWindow* window = new BasicPulseTrainWindow;
+    ProgramGuiWindow* window = new ProgramGuiWindow();
     window->show();
     return app.exec();
 }

@@ -7,6 +7,8 @@ TARGET =
 DEPENDPATH += .
 INCLUDEPATH += .
 
+include(libs/qextserialport/src/qextserialport.pri)
+
 # Input
-HEADERS += BasicPulseTrainWindow.h
-SOURCES += BasicPulseTrainWindow.cpp PulseGeneratorGui.cpp
+HEADERS += ProgramGuiWindow.h
+SOURCES += ProgramGuiWindow.cpp PulseGeneratorGui.cpp
