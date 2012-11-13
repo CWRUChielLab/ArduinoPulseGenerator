@@ -32,7 +32,7 @@ void loop() {
 
 
         // if we have a complete line...
-        if (thisChar == '\r') {
+        if (thisChar == '\r' || thisChar == '\n') {
             inputLine[numChars] = '\0';
 
             Serial.println();
