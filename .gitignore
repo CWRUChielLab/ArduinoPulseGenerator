@@ -1,4 +1,8 @@
 .*
 *.o
+*.hex
+*.a
+PulseGeneratorGui0
+PulseGenerator
 moc_*
 Makefile
