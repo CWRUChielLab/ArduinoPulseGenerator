@@ -1,0 +1,14 @@
+!!IF qesp_mac_framework
+    LIBS += -framework $$QESP_LIB_BASENAME
+    INCLUDEPATH += $$[QT_INSTALL_LIBS]/$${QESP_LIB_BASENAME}.framework/Headers
+!!ELSE
+    SAVE_TEMPLATE = \$\$TEMPLATE
+    TEMPLATE = fakelib
+    LIBS += -l\$\$qtLibraryTarget($$QESP_LIB_BASENAME)
+    TEMPLATE = \$\$SAVE_TEMPLATE
+    INCLUDEPATH += $$[QT_INSTALL_HEADERS]/QtExtSerialPort
+!!ENDIF
+
+!!IF !qesp_static
+    DEFINES += QEXTSERIALPORT_USING_SHARED
+!!ENDIF
