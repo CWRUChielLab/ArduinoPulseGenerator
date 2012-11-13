@@ -2,7 +2,7 @@
 *.o
 *.hex
 *.a
-PulseGeneratorGui0
+ArduinoPulseGeneratorGui
 PulseGenerator
 moc_*
 Makefile
