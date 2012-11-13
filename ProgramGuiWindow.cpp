@@ -1,5 +1,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QPalette>
+#include <QApplication>
 #include "qextserialport.h"
 #include "qextserialenumerator.h"
 
@@ -17,20 +19,13 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
             "turn off channel 1\n"
             "end\n"
             );
-    /*
-     * m_texteditProgram->setTextColor(QColor(255, 0, 0));
-    m_texteditProgram->insertPlainText(
-            "end?\n"
-            );
-    m_texteditProgram->setTextColor(QColor(0, 0, 0));
-    m_texteditProgram->insertPlainText(
-            "end!\n"
-            );
-            */
     m_texteditProgram->setLineWrapMode(QTextEdit::NoWrap);
 
     m_texteditStatus = new QTextEdit();
     m_texteditStatus->setReadOnly(true);
+    QPalette p = m_texteditStatus->palette();
+    p.setBrush(QPalette::Base, QApplication::palette().window());
+    m_texteditStatus->setPalette(p);
 
     m_comboPort = new QComboBox();
     foreach (QextPortInfo info, QextSerialEnumerator::getPorts())
