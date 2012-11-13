@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 // A duration of time, in microseconds.
-typedef uint32_t Microseconds;
+typedef unsigned long Microseconds;
 
 // A duration much longer than any duration used in the program.
 const Microseconds forever = 0xFFFFFFFF;

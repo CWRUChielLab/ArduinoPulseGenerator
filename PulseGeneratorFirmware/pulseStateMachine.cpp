@@ -165,7 +165,7 @@ void PulseStateCommand::parseFromString(const char* input, const char** error) {
         consumeWhitespace(input, &index);
         if (!consumeTime(input, &index, &onTime)) {
             *error = "expected time, e.g. \"2 s\", "
-                "\"13 ms\", \"12 ms\", or \"15 \u00BFS\"";
+                "\"13 ms\", \"12 us\", or \"15 \u00B5s\"";
             return;
         }
 
@@ -178,7 +178,7 @@ void PulseStateCommand::parseFromString(const char* input, const char** error) {
         consumeWhitespace(input, &index);
         if (!consumeTime(input, &index, &offTime)) {
             *error = "expected time, e.g. \"2 s\", "
-                "\"13 ms\", \"12 ms\", or \"15 \u00BFS\"";
+                "\"13 ms\", \"12 us\", or \"15 \u00B5s\"";
             return;
         }
 
@@ -240,7 +240,7 @@ void PulseStateCommand::parseFromString(const char* input, const char** error) {
         consumeWhitespace(input, &index);
         if (!consumeTime(input, &index, &waitTime)) {
             *error = "expected time, e.g. \"2 s\", "
-                "\"13 ms\", \"12 ms\", or \"15 \u00BFS\"";
+                "\"13 ms\", \"12 us\", or \"15 \u00B5s\"";
             return;
         }
     } else {
