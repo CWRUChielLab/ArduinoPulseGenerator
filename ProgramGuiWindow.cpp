@@ -42,7 +42,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     }
 
 
-    m_buttonLoad = new QPushButton("Load");
+    m_buttonOpen = new QPushButton("Open");
     m_buttonSave = new QPushButton("Save");
     m_buttonRun = new QPushButton("Run");
 
@@ -51,7 +51,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     QHBoxLayout* buttonLayout = new QHBoxLayout;
     buttonLayout->addWidget(m_comboPort);
     buttonLayout->addStretch();
-    buttonLayout->addWidget(m_buttonLoad);
+    buttonLayout->addWidget(m_buttonOpen);
     buttonLayout->addWidget(m_buttonSave);
     buttonLayout->addWidget(m_buttonRun);
 
@@ -65,6 +65,8 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
 
     // attach signals as needed
     QObject::connect(m_buttonRun, SIGNAL(clicked()), this, SLOT(run()));
+    QObject::connect(m_buttonOpen, SIGNAL(clicked()), this, SLOT(open()));
+    QObject::connect(m_buttonSave, SIGNAL(clicked()), this, SLOT(save()));
     QObject::connect(m_comboPort, SIGNAL(editTextChanged(QString)), SLOT(onPortChanged()));
 
     m_port = NULL;
@@ -79,6 +81,41 @@ QSize ProgramGuiWindow::sizeHint() const {
 
 void ProgramGuiWindow::run() {
     m_port->write(m_texteditProgram->toPlainText().toUtf8());
+}
+
+void ProgramGuiWindow::open() {
+    QString fileName = QFileDialog::getOpenFileName(this,
+            tr("Open Pulse Sequence"), "",
+            tr("Pulse Sequence (*.psq);;All Files (*)"));
+
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);
+        if (!file.open(QIODevice::ReadOnly)) {
+            QMessageBox::information(this, tr("Unable to open file"),
+                    file.errorString());
+            return;
+        }
+        QTextStream in(&file);
+        m_texteditProgram->setText(in.readAll());
+    }
+}
+
+void ProgramGuiWindow::save() {
+    QString fileName = QFileDialog::getSaveFileName(this,
+            tr("Save Pulse Sequence"), "",
+            tr("Pulse Sequence (*.psq);;All Files (*)"));
+
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly)) {
+            QMessageBox::information(this, tr("Unable to open file"),
+                    file.errorString());
+            return;
+        }
+        QTextStream out(&file);
+        //file.write(m_texteditProgram->toPlainText().toUtf8());
+        out << m_texteditProgram->toPlainText();
+    }
 }
 
 void ProgramGuiWindow::onNewSerialData() {

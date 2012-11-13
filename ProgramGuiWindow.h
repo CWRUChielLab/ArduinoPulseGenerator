@@ -5,6 +5,9 @@
 #include <QLabel>
 #include <QTextEdit>
 #include <QComboBox>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QTextStream>
 
 class QextSerialPort;
 
@@ -20,7 +23,7 @@ class ProgramGuiWindow : public QWidget
 
     // bottom buttons
     QComboBox* m_comboPort;
-    QPushButton* m_buttonLoad;
+    QPushButton* m_buttonOpen;
     QPushButton* m_buttonSave;
     QPushButton* m_buttonRun;
 
@@ -28,8 +31,9 @@ class ProgramGuiWindow : public QWidget
     QextSerialPort* m_port;
 
 private Q_SLOTS:
-    // void onPortNameChanged(const QString &name);
     void run();
+    void save();
+    void open();
     void onNewSerialData();
     void onPortChanged();
 
