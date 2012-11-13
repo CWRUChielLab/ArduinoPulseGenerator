@@ -100,6 +100,9 @@ ARDUINO_SOURCES=	CDC.o \
 
 clean:
 	rm -f *.o *.a *.hex $(APPNAME)
+	rm -f $(SOURCES)
+	rm -f $(TEST_SOURCES)
+	rm -f run_tests
 
 upload: $(APPNAME).hex
 	stty -F $(PORT) hupcl # e.g. reset the arduino
@@ -118,11 +121,6 @@ $(APPNAME) : $(SOURCES) libarduinocore.a
 
 test: run_tests
 	./run_tests
-
-clean:
-	rm -rf $(SOURCES)
-	rm -rf $(TEST_SOURCES)
-	rm -rf run_tests
 
 run_tests: $(SOURCES) $(TEST_SOURCES)
 	$(CXX) $(CXXFLAGS) -o run_tests $^
