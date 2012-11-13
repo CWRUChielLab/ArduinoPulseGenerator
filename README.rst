@@ -28,7 +28,7 @@ Usage
 =====
 
 Pulse sequences are defined by simple programs.  For example, the following
-program will generate 15 ms pulses on channel 1 for 3 seconds:
+program will generate 15 ms pulses on channel 1 for 3 seconds::
 
     change channel 1 to repeat 15 ms on 85 ms off
     wait 3 s
