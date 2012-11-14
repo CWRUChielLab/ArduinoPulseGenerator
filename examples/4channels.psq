@@ -1,0 +1,13 @@
+change channel 1 to repeat 15 ms on 18 ms off
+wait 1 s
+turn off channel 1
+change channel 2 to repeat 15 ms on 18 ms off
+wait 1 s
+turn off channel 2
+change channel 3 to repeat 15 ms on 18 ms off
+wait 1 s
+turn off channel 3
+change channel 4 to repeat 15 ms on 18 ms off
+wait 1 s
+turn off channel 4
+end

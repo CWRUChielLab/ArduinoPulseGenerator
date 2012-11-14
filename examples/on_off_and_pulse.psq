@@ -1,0 +1,8 @@
+turn on channel 1
+wait 1 s
+turn off channel 1
+wait 1 s
+change channel 1 to repeat 15 ms on 185 ms off
+wait 1 s
+turn off channel 1
+end
