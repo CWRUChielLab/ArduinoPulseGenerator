@@ -52,7 +52,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
 
     QVBoxLayout* mainLayout = new QVBoxLayout;
     mainLayout->addWidget(m_texteditProgram);
-    mainLayout->setStretch(0,4);
+    mainLayout->setStretchFactor(m_texteditProgram, 4);
     //mainLayout->addWidget(m_labelStatus);
     mainLayout->addWidget(m_texteditStatus);
     mainLayout->addLayout(buttonLayout);
