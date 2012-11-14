@@ -8,7 +8,7 @@ int lineNum = 0;
 const int maxLines = 80;
 PulseStateCommand commands[maxLines];
 
-int channelPins[numChannels] = { 13, 2, 3, 4 };
+int channelPins[numChannels] = { 2, 3, 4, 5 };
 
 void setup() {
     // set up the pins as outputs

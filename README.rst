@@ -35,7 +35,7 @@ program will generate 15 ms pulses on channel 1 for 3 seconds::
     turn off channel 1
     end
 
-Channels 1, 2, 3, and 4 are mapped to arduino pins 13, 2, 3, and 4
+Channels 1, 2, 3, and 4 are mapped to arduino pins 2, 3, 4 and 5
 respectively.
 
 
