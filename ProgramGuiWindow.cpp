@@ -31,10 +31,10 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     foreach (QextPortInfo info, QextSerialEnumerator::getPorts())
         m_comboPort->addItem(info.portName);
     m_comboPort->setEditable(true);
-    int index_ttyACM0 = m_comboPort->findText("ttyACM0");
-    if (index_ttyACM0 > -1) {
-        m_comboPort->setCurrentIndex(index_ttyACM0);
-    }
+    // the last port is much more likely to be the Arduino (since the first
+    // ports are usually built-in serial ports), so we select the last by
+    // default.
+    m_comboPort->setCurrentIndex(m_comboPort->count() - 1);
 
 
     m_buttonOpen = new QPushButton("Open");
