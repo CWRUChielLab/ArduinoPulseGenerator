@@ -57,10 +57,16 @@ void loop() {
                     Microseconds prevTime = micros();
                     Microseconds timeInState = 0;
 
+                    Microseconds maxError = 0;
                     while (runningLine < lineNum) {
                         Microseconds newTime = micros();
                         Microseconds timeAvailable = newTime - prevTime;
                         Microseconds lastTimeAvailable = timeAvailable;
+
+                        // track the maximum iteration length
+                        if (timeAvailable > maxError) {
+                            maxError = timeAvailable;
+                        }
 
                         // update the channel states
                         for (unsigned int i = 0; i < numChannels; ++i) {
@@ -85,7 +91,9 @@ void loop() {
                     }
 
                     lineNum = 0;
-                    Serial.println("done.");
+                    Serial.print("done.  (timing precision was better than ");
+                    Serial.print(maxError);
+                    Serial.println(" microseconds)");
 
                 } else if (lineNum == maxLines - 1) {
                     Serial.print("Error: program too long (max ");
