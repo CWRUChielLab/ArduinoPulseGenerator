@@ -9,7 +9,8 @@ Changes
 2) Changed the default configuration to create a static build of qwt with just
    the QwtPlot widget.  Use qwtconfig.pri to restore support for other widgets
    if you need them.
-
+3) Created a project include file (src/qwt.pri) to include qwt without needing
+   to build a library first.
 
 Release 6.0.1
 ===================

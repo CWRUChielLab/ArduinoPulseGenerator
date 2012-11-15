@@ -7,6 +7,7 @@ TARGET =
 DEPENDPATH += .
 INCLUDEPATH += .
 
+include(libs/qwt/src/qwt.pri)
 include(libs/qextserialport/src/qextserialport.pri)
 
 # Input
