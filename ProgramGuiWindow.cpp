@@ -2,7 +2,6 @@
 #include <QVBoxLayout>
 #include <QPalette>
 #include <QApplication>
-#include <QSysInfo>
 #include "qextserialport.h"
 #include "qextserialenumerator.h"
 
