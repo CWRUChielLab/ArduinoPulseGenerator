@@ -3,11 +3,33 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = 
+TARGET =
 DEPENDPATH += .
 INCLUDEPATH += .
 
+# libraries
 include(libs/qextserialport/src/qextserialport.pri)
+
+# support for building universal binaries on the mac
+isEmpty( MACTARGET ) {
+   MACTARGET = intel
+}
+macx {
+   contains( MACTARGET, intel ) {
+      message( "Adding support for intel macs" )
+      CONFIG += x86
+   }
+
+   contains( MACTARGET, ppc ) {
+      message( "Adding support for ppc macs" )
+      CONFIG += ppc
+
+      # if we are building a universal binary set the SDK path to the universal SDK
+      contains( MACTARGET, intel ) {
+         QMAKE_MAC_SDK = /Developer/SDKs/MacOSX10.4u.sdk
+      }
+   }
+}
 
 # Input
 HEADERS += ProgramGuiWindow.h
