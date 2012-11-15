@@ -55,9 +55,15 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     // then the status box
     m_texteditStatus = new QTextEdit();
     m_texteditStatus->setReadOnly(true);
+
+    // Qt 4.4 seems to have drawing problems when scrolling with a gray
+    // background on OS X.
+#ifndef Q_WS_MAC
+    // draw the read-only status box with a gray background.
     QPalette p = m_texteditStatus->palette();
     p.setBrush(QPalette::Base, QApplication::palette().window());
     m_texteditStatus->setPalette(p);
+#endif
 
     // the port selection combo box...
     m_labelPort = new QLabel("Port");
