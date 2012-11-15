@@ -2,15 +2,30 @@
 #include <QVBoxLayout>
 #include <QPalette>
 #include <QApplication>
-#include "qextserialport.h"
-#include "qextserialenumerator.h"
+#include <qextserialport.h>
+#include <qextserialenumerator.h>
+#include <qwt_series_data.h>
 
 #include "ProgramGuiWindow.h"
+
+// the default Qwt minimum plot size is far too large, so we need to
+// subclass the plot.
+class QwtShortPlot : public QwtPlot
+{
+    virtual QSize sizeHint()	const {
+        return QSize(32, 32);
+    }
+    virtual QSize minimumSizeHint()	const {
+        return QSize(32, 32);
+    }
+};
 
 ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     QWidget(parent)
 {
     // create the controls
+
+    // first the program editor
     m_texteditProgram = new QTextEdit();
     //m_texteditProgram->setText(
     m_texteditProgram->insertPlainText(
@@ -21,12 +36,31 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
             );
     m_texteditProgram->setLineWrapMode(QTextEdit::NoWrap);
 
+
+    // then the plot
+    m_plot = new QwtShortPlot();
+    QwtPlotCurve *curve1 = new QwtPlotCurve("Curve 1");
+    //QwtPlotCurve *curve2 = new QwtPlotCurve("Curve 2");
+    QVector<QPointF> points;
+    points.append(QPointF(1.0, 2.0));
+    points.append(QPointF(2.0, 1.0));
+    points.append(QPointF(3.0, 2.5));
+    QwtPointSeriesData* pointData = new QwtPointSeriesData(points);
+    curve1->setData(pointData);
+    //curve2->setData(...);
+    curve1->attach(m_plot);
+    //curve2->attach(m_plot);
+    m_plot->replot();
+
+    // then the status box
     m_texteditStatus = new QTextEdit();
     m_texteditStatus->setReadOnly(true);
     QPalette p = m_texteditStatus->palette();
     p.setBrush(QPalette::Base, QApplication::palette().window());
     m_texteditStatus->setPalette(p);
 
+    // the port selection combo box...
+    m_labelPort = new QLabel("Port");
     m_comboPort = new QComboBox();
     foreach (QextPortInfo info, QextSerialEnumerator::getPorts())
         m_comboPort->addItem(info.portName);
@@ -36,7 +70,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     // default.
     m_comboPort->setCurrentIndex(m_comboPort->count() - 1);
 
-
+    // and the buttons
     m_buttonOpen = new QPushButton("Open");
     m_buttonSave = new QPushButton("Save");
     m_buttonRun = new QPushButton("Run");
@@ -44,17 +78,23 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
 
     // lay out the controls
     QHBoxLayout* buttonLayout = new QHBoxLayout;
+    buttonLayout->addWidget(m_labelPort);
     buttonLayout->addWidget(m_comboPort);
     buttonLayout->addStretch();
     buttonLayout->addWidget(m_buttonOpen);
     buttonLayout->addWidget(m_buttonSave);
     buttonLayout->addWidget(m_buttonRun);
 
+    m_tabs = new QTabWidget();
+    m_tabs->addTab(m_texteditStatus, "Status");
+    m_tabs->addTab(m_plot, "Simulation Results");
+
     QVBoxLayout* mainLayout = new QVBoxLayout;
     mainLayout->addWidget(m_texteditProgram);
-    mainLayout->setStretchFactor(m_texteditProgram, 4);
-    //mainLayout->addWidget(m_labelStatus);
-    mainLayout->addWidget(m_texteditStatus);
+    mainLayout->setStretchFactor(m_texteditProgram, 20);
+    mainLayout->addWidget(m_tabs);
+    //mainLayout->addWidget(m_plot);
+    //mainLayout->addWidget(m_texteditStatus);
     mainLayout->addLayout(buttonLayout);
     setLayout(mainLayout);
 
@@ -70,7 +110,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
 
 
 QSize ProgramGuiWindow::sizeHint() const {
-    return QSize(600,600);
+    return QSize(600,700);
 }
 
 

@@ -8,6 +8,9 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QTextStream>
+#include <QTabWidget>
+#include <qwt_plot.h>
+#include <qwt_plot_curve.h>
 
 class QextSerialPort;
 
@@ -16,12 +19,17 @@ class ProgramGuiWindow : public QWidget
 {
     Q_OBJECT
 
+    // Program editor
     QTextEdit* m_texteditProgram;
+
+    // Plot from simulation
+    QwtPlot *m_plot;
 
     // status display
     QTextEdit* m_texteditStatus;
 
     // bottom buttons
+    QLabel* m_labelPort;
     QComboBox* m_comboPort;
     QPushButton* m_buttonOpen;
     QPushButton* m_buttonSave;
@@ -29,6 +37,9 @@ class ProgramGuiWindow : public QWidget
 
     // the serial port
     QextSerialPort* m_port;
+
+    // the tab container
+    QTabWidget* m_tabs;
 
 private Q_SLOTS:
     void run();
