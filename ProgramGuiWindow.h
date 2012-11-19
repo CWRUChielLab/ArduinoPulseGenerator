@@ -30,6 +30,9 @@ class ProgramGuiWindow : public QWidget
     // the serial port
     QextSerialPort* m_port;
 
+    // lines buffered to send to the device
+    QStringList m_sendBuffer;
+
 private Q_SLOTS:
     void run();
     void save();

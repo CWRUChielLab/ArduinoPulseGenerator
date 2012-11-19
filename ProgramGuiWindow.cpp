@@ -81,7 +81,13 @@ QSize ProgramGuiWindow::sizeHint() const {
 
 
 void ProgramGuiWindow::run() {
-    m_port->write(m_texteditProgram->toPlainText().toUtf8());
+    // split the text into a series of lines
+    m_sendBuffer = m_texteditProgram->toPlainText().split('\n');
+
+    // send the first line (note that we can't safely send the entire program
+    // because the arduino has a very small receive buffer).
+    m_port->write((m_sendBuffer.front() + "\n").toUtf8());
+    m_sendBuffer.pop_front();
 }
 
 void ProgramGuiWindow::open() {
@@ -114,15 +120,25 @@ void ProgramGuiWindow::save() {
             return;
         }
         QTextStream out(&file);
-        //file.write(m_texteditProgram->toPlainText().toUtf8());
         out << m_texteditProgram->toPlainText();
     }
 }
 
 void ProgramGuiWindow::onNewSerialData() {
     if (m_port->bytesAvailable()) {
+        QString newData = QString::fromUtf8(m_port->readAll()).replace("\n","");
+
+        // queue up one additional line per prompt
+        int numPrompts = newData.count(':');
+        while (numPrompts > 0 && !m_sendBuffer.isEmpty()) {
+            m_port->write((m_sendBuffer.front() + "\n").toUtf8());
+            m_sendBuffer.pop_front();
+            --numPrompts;
+        }
+
+        // display the new data
         m_texteditStatus->moveCursor(QTextCursor::End);
-        m_texteditStatus->insertPlainText(QString::fromUtf8(m_port->readAll()).replace("\n",""));
+        m_texteditStatus->insertPlainText(newData);
     }
 }
 
