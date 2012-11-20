@@ -6,3 +6,4 @@ ArduinoPulseGeneratorGui
 PulseGeneratorFirmware/PulseGeneratorFirmware
 moc_*
 Makefile
+run_tests
