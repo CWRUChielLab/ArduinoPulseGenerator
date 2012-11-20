@@ -132,7 +132,7 @@ bool QextSerialPortPrivate::close_sys()
     }
     _bytesToWrite = 0;
 
-    foreach(OVERLAPPED* o, pendingWrites) {
+    Q_FOREACH(OVERLAPPED* o, pendingWrites) {
         CloseHandle(o->hEvent);
         delete o;
     }
@@ -301,7 +301,7 @@ void QextSerialPortPrivate::_q_onWinEvent(HANDLE h)
             */
             qint64 totalBytesWritten = 0;
             QList<OVERLAPPED*> overlapsToDelete;
-            foreach(OVERLAPPED* o, pendingWrites) {
+            Q_FOREACH(OVERLAPPED* o, pendingWrites) {
                 DWORD numBytes = 0;
                 if (GetOverlappedResult(Win_Handle, o, & numBytes, false)) {
                     overlapsToDelete.append(o);
@@ -318,7 +318,7 @@ void QextSerialPortPrivate::_q_onWinEvent(HANDLE h)
                 _bytesToWrite = 0;
             }
 
-            foreach(OVERLAPPED* o, overlapsToDelete) {
+            Q_FOREACH(OVERLAPPED* o, overlapsToDelete) {
                 OVERLAPPED *toDelete = pendingWrites.takeAt(pendingWrites.indexOf(o));
                 CloseHandle(toDelete->hEvent);
                 delete toDelete;

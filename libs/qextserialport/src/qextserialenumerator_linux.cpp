@@ -138,7 +138,7 @@ QList<QextPortInfo> QextSerialEnumeratorPrivate::getPorts_sys()
     portNamePrefixes << QLatin1String("ttyACM*") << QLatin1String("ttyUSB*") << QLatin1String("rfcomm*");
     portNameList += dir.entryList(portNamePrefixes, (QDir::System | QDir::Files), QDir::Name);
 
-    foreach (QString str , portNameList) {
+    Q_FOREACH (QString str , portNameList) {
         QextPortInfo inf;
         inf.physName = QLatin1String("/dev/")+str;
         inf.portName = str;
@@ -172,7 +172,7 @@ bool QextSerialEnumeratorPrivate::setUpNotifications_sys(bool setup)
 
     // Emit signals immediately for devices already connected (Windows version seems to behave
     // this way)
-    foreach (QextPortInfo i, getPorts_sys())
+    Q_FOREACH (QextPortInfo i, getPorts_sys())
         Q_EMIT q->deviceDiscovered(i);
 
     // Look for tty devices from udev.
