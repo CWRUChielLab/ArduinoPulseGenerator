@@ -1,5 +1,5 @@
 # the name of the main file and sources to be used
-APPNAME=PulseGenerator
+APPNAME=PulseGeneratorFirmware
 SOURCES=$(APPNAME).o pulseStateMachine.o
 TEST_SOURCES = pulseStateMachine_test.o
 

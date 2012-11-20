@@ -41,6 +41,9 @@ class ProgramGuiWindow : public QWidget
     // the tab container
     QTabWidget* m_tabs;
 
+    // lines buffered to send to the device
+    QStringList m_sendBuffer;
+
 private Q_SLOTS:
     void run();
     void save();

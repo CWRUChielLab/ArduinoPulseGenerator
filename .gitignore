@@ -3,6 +3,6 @@
 *.hex
 *.a
 ArduinoPulseGeneratorGui
-PulseGenerator
+PulseGeneratorFirmware
 moc_*
 Makefile
