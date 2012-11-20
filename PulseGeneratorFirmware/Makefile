@@ -16,28 +16,14 @@ ARDUINO_SPI_LIB_DIR=/usr/share/arduino/libraries/SPI
 
 # port the arduino is connected to
 # and CPU type as defined by gcc and AVR-DUDE
-ifeq ($(wildcard /dev/ttyACM0),)
-PORT=/dev/ttyUSB0
-GCC_MMCU=atmega1280
-AVRDUDE_MCU=m1280
-AVRDUDE_STK=stk500v1
-AVRDUDE_BAUD=57600
-else
 PORT=/dev/ttyACM0
 GCC_MMCU=atmega2560
 AVRDUDE_STK=stk500v2
 AVRDUDE_MCU=atmega2560
 AVRDUDE_BAUD=115200
-endif
-
-#GCC_MMCU=atmega328p
-#AVRDUDE_MCU=atmega328p
-#AVRDUDE_STK=stk500v1
-#AVRDUDE_BAUD=57600
 
 # CPU Clock speed (cycles per second)
 CLOCKSPEED=16000000
-#CLOCKSPEED=8000000
 
 CC=avr-gcc
 CXX=avr-g++
