@@ -40,7 +40,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
 
     // then the plot
     m_plot = new QwtShortPlot();
-    m_plot->setAxisScale(0,  -0.5 - numChannels, -0.5, 1);
+    m_plot->setAxisScale(QwtPlot::yLeft,  -0.5 - numChannels, -0.5, 1);
     for (unsigned int i = 0; i < numChannels; ++i) {
         m_curves.push_back(new QwtPlotCurve("Channel " + QString::number(i)));
         m_curves.back()->attach(m_plot);
@@ -175,14 +175,19 @@ void ProgramGuiWindow::simulate() {
     int runningLine = 0;
     Microseconds time = 0;
     Microseconds timeInState = 0;
+    int steps = 0;
+    int maxSteps = 1000000;
+    const float us = 1e-6f;
 
     // mark the starting state
     for (unsigned int i = 0; i < numChannels; ++i) {
-        m_points[i].append(QPointF(time,
+        m_points[i].append(QPointF(time * us,
                     (channels[i].on() ? high : low) - i - 1));
     }
 
-    while (runningLine < commands.size() - 1) {
+    while (runningLine < commands.size() - 1 && steps < maxSteps) {
+        ++steps;
+
         // calculate the maximum amount of time before a channel changes
         Microseconds timeStep = forever;
         for (unsigned int i = 0; i < numChannels; ++i) {
@@ -205,7 +210,7 @@ void ProgramGuiWindow::simulate() {
 
         // mark the channel on/off state before the change
         for (unsigned int i = 0; i < numChannels; ++i) {
-            m_points[i].append(QPointF(time,
+            m_points[i].append(QPointF(time * us,
                         (channels[i].on() ? high : low) - i - 1));
         }
 
@@ -216,9 +221,20 @@ void ProgramGuiWindow::simulate() {
 
         // mark the channel on/off state after the change
         for (unsigned int i = 0; i < numChannels; ++i) {
-            m_points[i].append(QPointF(time,
+            m_points[i].append(QPointF(time * us,
                         (channels[i].on() ? high : low) - i - 1));
         }
+    }
+
+    // add some extra time before and after the simulation to bracket
+    // things nicely
+    float timeStart = std::min(-0.05f * time * us, -1 * us);
+    float timeEnd = std::max(((steps < maxSteps) ? 1.05f : 1) * time * us, 1 * us);
+    m_plot->setAxisScale(QwtPlot::xBottom,  timeStart, timeEnd);
+    for (unsigned int i = 0; i < numChannels; ++i) {
+        m_points[i].prepend(QPointF(timeStart, low - i - 1));
+        m_points[i].append(QPointF(timeEnd,
+                    (channels[i].on() ? high : low) - i - 1));
     }
 
 
