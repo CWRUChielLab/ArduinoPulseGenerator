@@ -44,6 +44,10 @@ class PulseChannel {
         // update the on/off state of the channel to reflect the passage of
         // dt microseconds of time.
         void advanceTime(Microseconds dt);
+
+        // Compute the minimum time that must advance for the next state
+        // change to occur.
+        Microseconds timeUntilNextStateChange() const;
 };
 
 

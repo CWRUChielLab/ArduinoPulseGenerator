@@ -24,7 +24,13 @@ void PulseChannel::advanceTime(Microseconds dt) {
         m_timeInState -= m_stateTime[m_on];
         m_on = !m_on;
     }
-};
+}
+
+
+Microseconds PulseChannel::timeUntilNextStateChange() const {
+    return m_stateTime[m_on] - m_timeInState;
+}
+
 
 
 static bool consumeToken(const char* token, const char* input, int* index) {

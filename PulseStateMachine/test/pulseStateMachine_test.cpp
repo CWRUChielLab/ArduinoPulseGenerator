@@ -53,6 +53,32 @@ void runPulseChannelTests() {
         p.setOnOffTime(0, 10);
         assert(p.on() == false);
     }
+
+    // setting 0 for on time should turn on and leave on
+    {
+        PulseChannel p;
+        p.setOnOffTime(10, 0);
+        assert(p.on() == true);
+        p.setOnOffTime(20, 50);
+        assert(p.on() == true);
+        p.setOnOffTime(10, 0);
+        assert(p.on() == true);
+    }
+
+    // should correctly compute time until next state change
+    {
+        PulseChannel p;
+        p.setOnOffTime(20, 50);
+        assert(p.timeUntilNextStateChange() == 20);
+        p.advanceTime(11);
+        assert(p.timeUntilNextStateChange() == 9);
+        p.advanceTime(9);
+        assert(p.timeUntilNextStateChange() == 50);
+        p.advanceTime(23);
+        assert(p.timeUntilNextStateChange() == 27);
+        p.advanceTime(27);
+        assert(p.timeUntilNextStateChange() == 20);
+    }
 }
 
 
