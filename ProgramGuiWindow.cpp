@@ -152,7 +152,7 @@ void ProgramGuiWindow::simulate() {
     QVector<PulseStateCommand> commands;
     const char* error = NULL;
 
-    for (int i = 0; i < lines.length(); ++i) {
+    for (int i = 0; i < lines.size(); ++i) {
         m_texteditStatus->moveCursor(QTextCursor::End);
         m_texteditStatus->insertPlainText(QString::number(i+1) + "> " + lines[i] + "\n");
         if (lines[i].size() != 0) {
