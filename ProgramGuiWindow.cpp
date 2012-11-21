@@ -228,8 +228,8 @@ void ProgramGuiWindow::simulate() {
 
     // add some extra time before and after the simulation to bracket
     // things nicely
-    float timeStart = std::min(-0.05f * time * us, -1 * us);
-    float timeEnd = std::max(((steps < maxSteps) ? 1.05f : 1) * time * us, 1 * us);
+    float timeStart = std::min(-0.025f * time * us, -1 * us);
+    float timeEnd = std::max(((steps < maxSteps) ? 1.025f : 1) * time * us, 1 * us);
     m_plot->setAxisScale(QwtPlot::xBottom,  timeStart, timeEnd);
     for (unsigned int i = 0; i < numChannels; ++i) {
         m_points[i].prepend(QPointF(timeStart, low - i - 1));
@@ -264,6 +264,10 @@ void ProgramGuiWindow::open() {
         }
         QTextStream in(&file);
         m_texteditProgram->setText(in.readAll());
+
+        // disable the old simulation results and switch to the status tab
+        m_tabs->setCurrentIndex(m_tabs->indexOf(m_texteditStatus));
+        m_tabs->setTabEnabled(m_tabs->indexOf(m_plot), false);
     }
 }
 
