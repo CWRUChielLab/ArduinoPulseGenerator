@@ -24,6 +24,8 @@ class ProgramGuiWindow : public QWidget
 
     // Plot from simulation
     QwtPlot *m_plot;
+    QVector<QwtPlotCurve *> m_curves;
+    QVector<QVector<QPointF> > m_points;
 
     // status display
     QTextEdit* m_texteditStatus;
@@ -33,6 +35,7 @@ class ProgramGuiWindow : public QWidget
     QComboBox* m_comboPort;
     QPushButton* m_buttonOpen;
     QPushButton* m_buttonSave;
+    QPushButton* m_buttonSimulate;
     QPushButton* m_buttonRun;
 
     // the serial port
@@ -45,9 +48,11 @@ class ProgramGuiWindow : public QWidget
     QStringList m_sendBuffer;
 
 private Q_SLOTS:
-    void run();
     void save();
     void open();
+    void simulate();
+    void run();
+
     void onNewSerialData();
     void onPortChanged();
 

@@ -5,7 +5,8 @@
 TEMPLATE = app
 TARGET =
 DEPENDPATH += .
-INCLUDEPATH += .
+INCLUDEPATH += . PulseStateMachine
+CONFIG += no_keywords
 
 # libraries
 include(libs/qwt/src/qwt.pri)
@@ -34,4 +35,4 @@ macx {
 
 # Input
 HEADERS += ProgramGuiWindow.h
-SOURCES += ProgramGuiWindow.cpp PulseGeneratorGui.cpp
+SOURCES += ProgramGuiWindow.cpp PulseGeneratorGui.cpp PulseStateMachine/pulseStateMachine.cpp

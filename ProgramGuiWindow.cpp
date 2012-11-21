@@ -4,9 +4,10 @@
 #include <QApplication>
 #include <qextserialport.h>
 #include <qextserialenumerator.h>
-#include <qwt_series_data.h>
 
+#include "pulseStateMachine.h"
 #include "ProgramGuiWindow.h"
+
 
 // the default Qwt minimum plot size is far too large, so we need to
 // subclass the plot.
@@ -39,18 +40,12 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
 
     // then the plot
     m_plot = new QwtShortPlot();
-    QwtPlotCurve *curve1 = new QwtPlotCurve("Curve 1");
-    //QwtPlotCurve *curve2 = new QwtPlotCurve("Curve 2");
-    QVector<QPointF> points;
-    points.append(QPointF(1.0, 2.0));
-    points.append(QPointF(2.0, 1.0));
-    points.append(QPointF(3.0, 2.5));
-    QwtPointSeriesData* pointData = new QwtPointSeriesData(points);
-    curve1->setData(pointData);
-    //curve2->setData(...);
-    curve1->attach(m_plot);
-    //curve2->attach(m_plot);
-    m_plot->replot();
+    m_plot->setAxisScale(0,  -0.5 - numChannels, -0.5, 1);
+    for (unsigned int i = 0; i < numChannels; ++i) {
+        m_curves.push_back(new QwtPlotCurve("Channel " + QString::number(i)));
+        m_curves.back()->attach(m_plot);
+        m_points.push_back(QVector<QPointF>());
+    }
 
     // then the status box
     m_texteditStatus = new QTextEdit();
@@ -68,7 +63,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     // the port selection combo box...
     m_labelPort = new QLabel("Port");
     m_comboPort = new QComboBox();
-    foreach (QextPortInfo info, QextSerialEnumerator::getPorts())
+    Q_FOREACH (QextPortInfo info, QextSerialEnumerator::getPorts())
         m_comboPort->addItem(info.portName);
     m_comboPort->setEditable(true);
     // the last port is much more likely to be the Arduino (since the first
@@ -79,6 +74,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     // and the buttons
     m_buttonOpen = new QPushButton("Open");
     m_buttonSave = new QPushButton("Save");
+    m_buttonSimulate = new QPushButton("Simulate");
     m_buttonRun = new QPushButton("Run");
 
 
@@ -89,11 +85,13 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     buttonLayout->addStretch();
     buttonLayout->addWidget(m_buttonOpen);
     buttonLayout->addWidget(m_buttonSave);
+    buttonLayout->addWidget(m_buttonSimulate);
     buttonLayout->addWidget(m_buttonRun);
 
     m_tabs = new QTabWidget();
     m_tabs->addTab(m_texteditStatus, "Status");
     m_tabs->addTab(m_plot, "Simulation Results");
+    m_tabs->setTabEnabled(m_tabs->indexOf(m_plot), false);
 
     QVBoxLayout* mainLayout = new QVBoxLayout;
     mainLayout->addWidget(m_texteditProgram);
@@ -105,9 +103,10 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     setLayout(mainLayout);
 
     // attach signals as needed
-    QObject::connect(m_buttonRun, SIGNAL(clicked()), this, SLOT(run()));
     QObject::connect(m_buttonOpen, SIGNAL(clicked()), this, SLOT(open()));
     QObject::connect(m_buttonSave, SIGNAL(clicked()), this, SLOT(save()));
+    QObject::connect(m_buttonSimulate, SIGNAL(clicked()), this, SLOT(simulate()));
+    QObject::connect(m_buttonRun, SIGNAL(clicked()), this, SLOT(run()));
     QObject::connect(m_comboPort, SIGNAL(editTextChanged(QString)), SLOT(onPortChanged()));
 
     m_port = NULL;
@@ -121,6 +120,9 @@ QSize ProgramGuiWindow::sizeHint() const {
 
 
 void ProgramGuiWindow::run() {
+    // switch to the status tab
+    m_tabs->setCurrentIndex(m_tabs->indexOf(m_texteditStatus));
+
     // split the text into a series of lines
     m_sendBuffer = m_texteditProgram->toPlainText().split('\n');
 
@@ -128,6 +130,108 @@ void ProgramGuiWindow::run() {
     // because the arduino has a very small receive buffer).
     m_port->write((m_sendBuffer.front() + "\n").toUtf8());
     m_sendBuffer.pop_front();
+}
+
+void ProgramGuiWindow::simulate() {
+    // disable the old simulation results and switch to the status tab
+    m_tabs->setCurrentIndex(m_tabs->indexOf(m_texteditStatus));
+    m_tabs->setTabEnabled(m_tabs->indexOf(m_plot), false);
+
+    // clear any previous plot points
+    for (unsigned int i = 0; i < numChannels; ++i) {
+        m_points[i].clear();
+    }
+
+
+    m_texteditStatus->moveCursor(QTextCursor::End);
+    m_texteditStatus->insertPlainText("\n\nParsing...\n");
+
+
+    // Parse the program
+    QStringList lines = m_texteditProgram->toPlainText().split('\n');
+    QVector<PulseStateCommand> commands;
+    const char* error = NULL;
+
+    for (int i = 0; i < lines.length(); ++i) {
+        m_texteditStatus->moveCursor(QTextCursor::End);
+        m_texteditStatus->insertPlainText(QString::number(i+1) + "> " + lines[i] + "\n");
+        if (lines[i].size() != 0) {
+            commands.push_back(PulseStateCommand());
+            commands.back().parseFromString(lines[i].toUtf8(), &error);
+            if (error) {
+                m_texteditStatus->insertPlainText(QString::fromUtf8(error) + "\n");
+                m_texteditStatus->moveCursor(QTextCursor::End);
+                return;
+            }
+        }
+    }
+
+
+    // run the program
+    const float low = -0.4;
+    const float high = 0.4;
+
+    PulseChannel channels[numChannels];
+    int runningLine = 0;
+    Microseconds time = 0;
+    Microseconds timeInState = 0;
+
+    // mark the starting state
+    for (unsigned int i = 0; i < numChannels; ++i) {
+        m_points[i].append(QPointF(time,
+                    (channels[i].on() ? high : low) - i - 1));
+    }
+
+    while (runningLine < commands.size() - 1) {
+        // calculate the maximum amount of time before a channel changes
+        Microseconds timeStep = forever;
+        for (unsigned int i = 0; i < numChannels; ++i) {
+            timeStep = std::min(timeStep, channels[i].timeUntilNextStateChange());
+        }
+
+        Microseconds commandTimeAvailable = timeStep;
+
+        // if the command finishes, advance to the next command
+        if (commands[runningLine].execute(
+                    channels, timeInState, &commandTimeAvailable)) {
+            ++runningLine;
+            timeInState = 0;
+            timeStep -= commandTimeAvailable;
+        } else {
+            timeInState += timeStep;
+        }
+
+        time += timeStep;
+
+        // mark the channel on/off state before the change
+        for (unsigned int i = 0; i < numChannels; ++i) {
+            m_points[i].append(QPointF(time,
+                        (channels[i].on() ? high : low) - i - 1));
+        }
+
+        // update the channel states
+        for (unsigned int i = 0; i < numChannels; ++i) {
+            channels[i].advanceTime(timeStep);
+        }
+
+        // mark the channel on/off state after the change
+        for (unsigned int i = 0; i < numChannels; ++i) {
+            m_points[i].append(QPointF(time,
+                        (channels[i].on() ? high : low) - i - 1));
+        }
+    }
+
+
+    // update the plot
+    for (unsigned int i = 0; i < numChannels; ++i) {
+        m_curves[i]->setSamples(m_points[i]);
+    }
+    m_plot->replot();
+
+    // display the results in the simulation tab
+    m_tabs->setTabEnabled(m_tabs->indexOf(m_plot), true);
+    m_tabs->setCurrentIndex(m_tabs->indexOf(m_plot));
+
 }
 
 void ProgramGuiWindow::open() {
