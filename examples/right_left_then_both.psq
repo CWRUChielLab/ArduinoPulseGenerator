@@ -1,13 +1,13 @@
-change channel 1 to repeat 15 ms on 85 ms off
+set channel 1 to 15 ms pulses at 10 Hz
 wait 2 s
 turn off channel 1
 wait 1 s
-change channel 2 to repeat 15 ms on 85 ms off
+set channel 2 to 15 ms pulses at 10 Hz
 wait 2 s
 turn off channel 2
 wait 1 s
-change channel 1 to repeat 15 ms on 85 ms off
-change channel 2 to repeat 15 ms on 85 ms off
+set channel 1 to 15 ms pulses at 10 Hz
+set channel 2 to 15 ms pulses at 10 Hz
 wait 2 s
 turn off channel 1
 turn off channel 2

@@ -2,7 +2,7 @@ turn on channel 1
 wait 1 s
 turn off channel 1
 wait 1 s
-change channel 1 to repeat 15 ms on 185 ms off
+set channel 1 to 15 ms pulses at 5 Hz
 wait 1 s
 turn off channel 1
 end

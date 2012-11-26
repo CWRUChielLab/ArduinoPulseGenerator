@@ -32,7 +32,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     m_texteditProgram = new QTextEdit();
     //m_texteditProgram->setText(
     m_texteditProgram->insertPlainText(
-            "change channel 1 to repeat 15 ms on 85 ms off\n"
+            "set channel 1 to 15 ms pulses at 10 Hz\n"
             "wait 3 s\n"
             "turn off channel 1\n"
             "end\n"

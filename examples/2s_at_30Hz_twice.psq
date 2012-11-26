@@ -1,8 +1,8 @@
-change channel 1 to repeat 15 ms on 18 ms off
+set channel 1 to 15 ms pulses at 30 Hz
 wait 2 s
 turn off channel 1
 wait 3 s
-change channel 1 to repeat 15 ms on 18 ms off
+set channel 1 to 15 ms pulses at 30 Hz
 wait 2 s
 turn off channel 1
 end
