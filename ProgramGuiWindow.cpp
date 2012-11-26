@@ -2,6 +2,8 @@
 #include <QVBoxLayout>
 #include <QPalette>
 #include <QApplication>
+#include <QDesktopServices>
+#include <QUrl>
 #include <qextserialport.h>
 #include <qextserialenumerator.h>
 
@@ -72,20 +74,26 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     m_comboPort->setCurrentIndex(m_comboPort->count() - 1);
 
     // and the buttons
+    m_buttonHelp = new QPushButton("Help");
+    m_buttonRun = new QPushButton("Run");
     m_buttonOpen = new QPushButton("Open");
     m_buttonSave = new QPushButton("Save");
     m_buttonSimulate = new QPushButton("Simulate");
-    m_buttonRun = new QPushButton("Run");
+    m_buttonRun = new QPushButton("Run on Device");
 
+    m_checkboxLock = new QCheckBox("Lock");
 
     // lay out the controls
     QHBoxLayout* buttonLayout = new QHBoxLayout;
-    buttonLayout->addWidget(m_labelPort);
-    buttonLayout->addWidget(m_comboPort);
-    buttonLayout->addStretch();
+    buttonLayout->addWidget(m_buttonHelp);
     buttonLayout->addWidget(m_buttonOpen);
     buttonLayout->addWidget(m_buttonSave);
     buttonLayout->addWidget(m_buttonSimulate);
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(m_labelPort);
+    buttonLayout->addWidget(m_comboPort);
+    buttonLayout->addStretch();
+    buttonLayout->addWidget(m_checkboxLock);
     buttonLayout->addWidget(m_buttonRun);
 
     m_tabs = new QTabWidget();
@@ -103,11 +111,13 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     setLayout(mainLayout);
 
     // attach signals as needed
+    QObject::connect(m_buttonHelp, SIGNAL(clicked()), this, SLOT(help()));
     QObject::connect(m_buttonOpen, SIGNAL(clicked()), this, SLOT(open()));
     QObject::connect(m_buttonSave, SIGNAL(clicked()), this, SLOT(save()));
     QObject::connect(m_buttonSimulate, SIGNAL(clicked()), this, SLOT(simulate()));
     QObject::connect(m_buttonRun, SIGNAL(clicked()), this, SLOT(run()));
     QObject::connect(m_comboPort, SIGNAL(editTextChanged(QString)), SLOT(onPortChanged()));
+    QObject::connect(m_checkboxLock, SIGNAL(stateChanged(int)), SLOT(onLockStateChanged(int)));
 
     m_port = NULL;
     onPortChanged();
@@ -116,6 +126,11 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
 
 QSize ProgramGuiWindow::sizeHint() const {
     return QSize(600,700);
+}
+
+
+void ProgramGuiWindow::help() {
+    QDesktopServices::openUrl(QUrl("https://github.com/kms15/ArduinoPulseGenerator"));
 }
 
 
@@ -317,4 +332,9 @@ void ProgramGuiWindow::onPortChanged() {
     m_port = new QextSerialPort(m_comboPort->currentText(), settings, QextSerialPort::EventDriven);
     QObject::connect(m_port, SIGNAL(readyRead()), SLOT(onNewSerialData()));
     m_port->open(QIODevice::ReadWrite);
+}
+
+
+void ProgramGuiWindow::onLockStateChanged(int state) {
+    m_buttonRun->setEnabled(state == Qt::Unchecked);
 }

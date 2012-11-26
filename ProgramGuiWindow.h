@@ -2,6 +2,7 @@
 #define PROGRAMGUIWINDOW_H
 #include <QWidget>
 #include <QPushButton>
+#include <QCheckBox>
 #include <QLabel>
 #include <QTextEdit>
 #include <QComboBox>
@@ -31,11 +32,13 @@ class ProgramGuiWindow : public QWidget
     QTextEdit* m_texteditStatus;
 
     // bottom buttons
-    QLabel* m_labelPort;
-    QComboBox* m_comboPort;
+    QPushButton* m_buttonHelp;
     QPushButton* m_buttonOpen;
     QPushButton* m_buttonSave;
     QPushButton* m_buttonSimulate;
+    QLabel* m_labelPort;
+    QComboBox* m_comboPort;
+    QCheckBox* m_checkboxLock;
     QPushButton* m_buttonRun;
 
     // the serial port
@@ -48,6 +51,7 @@ class ProgramGuiWindow : public QWidget
     QStringList m_sendBuffer;
 
 private Q_SLOTS:
+    void help();
     void save();
     void open();
     void simulate();
@@ -55,6 +59,7 @@ private Q_SLOTS:
 
     void onNewSerialData();
     void onPortChanged();
+    void onLockStateChanged(int state);
 
 public:
     ProgramGuiWindow(QWidget* parent = NULL);
