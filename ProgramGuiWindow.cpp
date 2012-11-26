@@ -130,7 +130,7 @@ QSize ProgramGuiWindow::sizeHint() const {
 
 
 void ProgramGuiWindow::help() {
-    QDesktopServices::openUrl(QUrl("https://github.com/kms15/ArduinoPulseGenerator"));
+    QDesktopServices::openUrl(QUrl("http://kms15.github.com/ArduinoPulseGenerator/manual/"));
 }
 
 
