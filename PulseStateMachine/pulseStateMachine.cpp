@@ -50,8 +50,8 @@ static bool consumeToken(const char* token, const char* input, int* index) {
 static void consumeWhitespace(const char* input, int* index) {
     int i = 0;
 
-    while (input[*index + i] == ' ' || input[*index + i] == '\n' ||
-            input[*index + i] == '\r') {
+    while (input[*index + i] == ' ' || input[*index + i] == '\t' ||
+            input[*index + i] == '\n' || input[*index + i] == '\r') {
         i++;
     }
 
@@ -76,10 +76,41 @@ static bool consumeUInt32(const char* input, int* index, uint32_t* result) {
 }
 
 
+static bool consumeDouble(const char* input, int* index, double* result) {
+    double val = 0;
+
+    if (input[*index] != '.' && !(input[*index] >= '0' && input[*index] <= '9')) {
+        return false;
+    }
+
+    // read the integer component
+    while (input[*index] >= '0' && input[*index] <= '9') {
+        val = 10 * val + input[*index] - '0';
+        (*index)++;
+    }
+
+    // read the decimal component, if present
+    if (input[*index] == '.') {
+        (*index)++;
+
+        double place = 1.;
+        while (input[*index] >= '0' && input[*index] <= '9') {
+            place = place / 10.;
+            val = val + place * (input[*index] - '0');
+            (*index)++;
+        }
+    }
+
+    *result = val;
+    return true;
+}
+
+
 static bool consumeTime(const char* input, int* index, Microseconds* result) {
     const char* expectedToken;
+    double val;
 
-    if (!consumeUInt32(input, index, result)) {
+    if (!consumeDouble(input, index, &val)) {
         return false;
     }
 
@@ -103,17 +134,49 @@ static bool consumeTime(const char* input, int* index, Microseconds* result) {
 
         case 'm':
             expectedToken = "ms";
-            *result *= 1000;
+            val *= 1000;
             break;
 
         case 's':
             expectedToken = "s";
-            *result *= 1000000;
+            val *= 1000000;
             break;
 
         default:
             return false;
     }
+
+    *result = Microseconds(val);
+
+    return consumeToken(expectedToken, input, index);
+}
+
+
+static bool consumeFrequency(const char* input, int* index, Microseconds* result) {
+    const char* expectedToken;
+    double val;
+
+    if (!consumeDouble(input, index, &val)) {
+        return false;
+    }
+
+    consumeWhitespace(input, index);
+    switch (input[*index]) {
+        case 'H':
+            expectedToken = "Hz";
+            break;
+
+        case 'k':
+            expectedToken = "kHz";
+            val *= 1000;
+            break;
+
+        default:
+            return false;
+    }
+
+    *result = Microseconds(1000000/val);
+
     return consumeToken(expectedToken, input, index);
 }
 
@@ -122,6 +185,7 @@ void PulseStateCommand::parseFromString(const char* input, const char** error) {
     int index = 0;
     uint32_t val;
 
+    consumeWhitespace(input, &index);
     if (input[index] == 'e') {
         // e.g. "end"
         if (!consumeToken("end", input, &index)) {
@@ -131,9 +195,9 @@ void PulseStateCommand::parseFromString(const char* input, const char** error) {
         type = end;
 
 
-    } else if (input[index] == 'c') {
-        // e.g. "set channel 3 to 213 us on 182 us off"
-        if (!consumeToken("change", input, &index)) {
+    } else if (input[index] == 's') {
+        // e.g. "set channel 3 to 213 us pulses at 15.1 Hz"
+        if (!consumeToken("set", input, &index)) {
             *error = "unrecognized command";
             return;
         }
@@ -163,12 +227,6 @@ void PulseStateCommand::parseFromString(const char* input, const char** error) {
         }
 
         consumeWhitespace(input, &index);
-        if (!consumeToken("repeat", input, &index)) {
-            *error = "expected \"repeat\"";
-            return;
-        }
-
-        consumeWhitespace(input, &index);
         if (!consumeTime(input, &index, &onTime)) {
             *error = "expected time, e.g. \"2 s\", "
                 "\"13 ms\", \"12 us\", or \"15 \u00B5s\"";
@@ -176,23 +234,25 @@ void PulseStateCommand::parseFromString(const char* input, const char** error) {
         }
 
         consumeWhitespace(input, &index);
-        if (!consumeToken("on", input, &index)) {
-            *error = "expected \"on\"";
+        if (!consumeToken("pulses", input, &index)) {
+            *error = "expected \"pulses\"";
             return;
         }
 
         consumeWhitespace(input, &index);
-        if (!consumeTime(input, &index, &offTime)) {
-            *error = "expected time, e.g. \"2 s\", "
-                "\"13 ms\", \"12 us\", or \"15 \u00B5s\"";
+        if (!consumeToken("at", input, &index)) {
+            *error = "expected \"at\"";
             return;
         }
 
         consumeWhitespace(input, &index);
-        if (!consumeToken("off", input, &index)) {
-            *error = "expected \"off\"";
+        Microseconds period;
+        if (!consumeFrequency(input, &index, &period)) {
+            *error = "expected frequency, e.g. \"2.3 Hz\" or \"15 kHz\"";
             return;
         }
+
+        offTime = period - onTime;
 
     } else if (input[index] == 't') {
         // e.g. "turn off channel 4" or "turn on channel 1"

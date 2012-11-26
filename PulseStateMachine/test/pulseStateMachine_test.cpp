@@ -1,10 +1,13 @@
 #include <iostream>
 #include <assert.h>
+#include <stdlib.h>
 #include "pulseStateMachine.h"
 #include "string.h"
 
 using std::cout;
 using std::endl;
+
+#define assertClose(X, Y) assert(abs((X) - (Y)) <= 1)
 
 void runPulseChannelTests() {
     // should be off by default
@@ -87,41 +90,75 @@ void runPulseStateCommandParsingTests() {
     {
         PulseStateCommand c;
         const char* error;
-        c.parseFromString("end", &error);
+        c.parseFromString("end program", &error);
         assert(error == NULL);
         assert(c.type == PulseStateCommand::end);
     }
     {
         PulseStateCommand c;
         const char* error;
-        // us and Latin-1 micro
-        c.parseFromString("change channel 3 to repeat 213 us on 182 \xB5s off", &error);
+        // fractional s, fractional Hz
+        c.parseFromString("set channel 2 to 2.31 s pulses at 0.125 Hz", &error);
+        assert(error == NULL);
+        assert(c.type == PulseStateCommand::setChannel);
+        assert(c.channel == 2);
+        assertClose(c.onTime, 2310000);
+        assertClose(c.offTime, 8000000 - 2310000);
+    }
+    {
+        PulseStateCommand c;
+        const char* error;
+        // ms, fractional Hz
+        c.parseFromString("set channel 2 to 30 ms pulses at .5 Hz", &error);
+        assert(error == NULL);
+        assert(c.type == PulseStateCommand::setChannel);
+        assert(c.channel == 2);
+        assert(c.onTime == 30000);
+        assert(c.offTime == 2000000 - 30000);
+    }
+    {
+        PulseStateCommand c;
+        const char* error;
+        // us micro, integer Hz
+        c.parseFromString("set channel 3 to 213 us pulses at 2000 Hz", &error);
         assert(error == NULL);
         assert(c.type == PulseStateCommand::setChannel);
         assert(c.channel == 3);
         assert(c.onTime == 213);
-        assert(c.offTime == 182);
+        assert(c.offTime == 500 - 213);
     }
     {
         PulseStateCommand c;
         const char* error;
-        c.parseFromString("change channel 1 to repeat 12 ms on 18 s off", &error);
-        assert(error == NULL);
-        assert(c.type == PulseStateCommand::setChannel);
-        assert(c.channel == 1);
-        assert(c.onTime == 12000);
-        assert(c.offTime == 18000000UL);
-    }
-    {
-        PulseStateCommand c;
-        const char* error;
-        // utf-8 micro and utf-8 greek lowercase mu
-        c.parseFromString("change  channel  2  to  repeat  13  \u00B5s  on  23  \u03BCs  off", &error);
+        // Latin-1 micro, integer kHz
+        c.parseFromString("set channel 2 to  182 \xB5s pulses at 4 kHz", &error);
         assert(error == NULL);
         assert(c.type == PulseStateCommand::setChannel);
         assert(c.channel == 2);
+        assert(c.onTime == 182);
+        assert(c.offTime == 250 - 182);
+    }
+    {
+        PulseStateCommand c;
+        const char* error;
+        // utf-8 micro and decimal kHz, extra whitespace
+        c.parseFromString("  set channel  1  to  13  \u00B5s  pulses  at 2.5 kHz", &error);
+        assert(error == NULL);
+        assert(c.type == PulseStateCommand::setChannel);
+        assert(c.channel == 1);
         assert(c.onTime == 13);
-        assert(c.offTime == 23);
+        assert(c.offTime == 400 - 13);
+    }
+    {
+        PulseStateCommand c;
+        const char* error;
+        // utf-8 greek lowercase mu and fractional Hz, extra tabs
+        c.parseFromString("\tset channel  4  to \t 13000  \u03BCs  \t pulses  at  \t2.5 Hz", &error);
+        assert(error == NULL);
+        assert(c.type == PulseStateCommand::setChannel);
+        assert(c.channel == 4);
+        assert(c.onTime == 13000);
+        assert(c.offTime == 400000 - 13000);
     }
     {
         PulseStateCommand c;
@@ -158,12 +195,6 @@ void runPulseStateCommandParsingTests() {
         const char* error;
         assert(numChannels == 4);
         c.parseFromString("turn off channel 5", &error);
-        assert(error && strcmp(error, "Channel number must be between 1 and 4") == 0);
-    }
-    {
-        PulseStateCommand c;
-        const char* error;
-        c.parseFromString("change channel 0 to repeat 12 ms on 18 s off", &error);
         assert(error && strcmp(error, "Channel number must be between 1 and 4") == 0);
     }
     // TODO: tests for other error messages.
