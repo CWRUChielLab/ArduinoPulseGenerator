@@ -5,4 +5,4 @@ wait 1 s
 set channel 1 to 15 ms pulses at 5 Hz
 wait 1 s
 turn off channel 1
-end
+end program

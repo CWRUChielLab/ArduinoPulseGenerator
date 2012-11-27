@@ -11,4 +11,4 @@ set channel 2 to 15 ms pulses at 10 Hz
 wait 2 s
 turn off channel 1
 turn off channel 2
-end
+end program

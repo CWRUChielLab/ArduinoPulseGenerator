@@ -11,6 +11,39 @@ const Microseconds forever = 0xFFFFFFFF;
 // Maximum number of pulse channels supported by the firmware.
 const unsigned numChannels = 4;
 
+// Maximum number of nested repeats
+const unsigned maxRepeatNesting = 20;
+
+// Store the state of repeats in a running program.
+class RepeatStack {
+    private:
+        int m_loopTarget[maxRepeatNesting];
+        uint32_t m_repeatCount[maxRepeatNesting];
+        unsigned m_size;
+
+    public:
+        RepeatStack() { m_size = 0; };
+
+        // enter into a new repeat loop
+        void pushRepeat(int loopTarget, uint32_t repeatCount) {
+            m_loopTarget[m_size] = loopTarget;
+            m_repeatCount[m_size] = repeatCount;
+            ++m_size;
+        };
+
+        // decrement and return the number of iterations remaining
+        uint32_t decrementRepeatCount() {
+            return --(m_repeatCount[m_size - 1]);
+        };
+
+        // get the current loop target
+        int getLoopTarget() { return m_loopTarget[m_size - 1]; }
+
+        // exit the current loop
+        void pop() { --m_size; }
+};
+
+
 // Stores the state of a single channel that can generate a square wave.
 // call advanceTime to update the on/off state to reflect where you are
 // in the waveform.
@@ -84,9 +117,12 @@ class PulseChannel {
 struct PulseStateCommand {
     public:
         enum Type {
-            end,
+            endProgram,
             setChannel,
-            wait
+            wait,
+            repeat,
+            endRepeat,
+            noOp
         };
 
         Type type;
@@ -99,17 +135,24 @@ struct PulseStateCommand {
             struct {
                 Microseconds waitTime;
             };
+            struct {
+                uint32_t repeatCount;
+            };
         };
 
     public:
         // Constructor.
-        PulseStateCommand() : type(end) {};
+        PulseStateCommand() : type(noOp) {};
 
         // Converts one line of human-readable text (input) into a
         // pulseStateCommand.  The error parameter will be set to NULL
         // if the conversion was successful; otherwise the error parameter
         // will point to a human-readable string describing the parsing error.
-        void parseFromString(const char* input, const char** error);
+        // Repeat depth contains the current depth of nested repeats, and
+        // will be automatically incremented or decremented by the parsed
+        // command.
+        void parseFromString(const char* input, const char** error,
+                unsigned* repeatDepth);
 
         // Runs the command, updating the on/off times for the channels
         // (passed in the channels parameter) as needed.
@@ -127,8 +170,11 @@ struct PulseStateCommand {
         // parameter would initially be 310 us before the call and 210 us after
         // the call.
         //
-        // The return value is true iff the command was completed this tick.
-        bool execute(PulseChannel* channels, Microseconds timeInState,
+        // The return value is the number of commands to advance (0 iff the
+        // command was not completed this tick, 1 when a normal command
+        // completed, and the relative distance to the jump target for jumps)
+        int execute(PulseChannel* channels, RepeatStack* stack,
+                int commandId, Microseconds timeInState,
                 Microseconds* timeAvailable);
 };
 

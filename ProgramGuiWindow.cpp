@@ -32,13 +32,16 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     m_texteditProgram = new QTextEdit();
     //m_texteditProgram->setText(
     m_texteditProgram->insertPlainText(
-            "set channel 1 to 15 ms pulses at 10 Hz\n"
-            "wait 3 s\n"
-            "turn off channel 1\n"
-            "end\n"
+            "repeat 3 times:\n"
+            "\tset channel 1 to 15 ms pulses at 10 Hz\n"
+            "\twait 1.5 s\n"
+            "\tturn off channel 1\n"
+            "\twait 500 ms\n"
+            "end repeat\n"
+            "end program\n"
             );
     m_texteditProgram->setLineWrapMode(QTextEdit::NoWrap);
-
+    m_texteditProgram->setTabStopWidth(16);
 
     // then the plot
     m_plot = new QwtShortPlot();
@@ -166,13 +169,14 @@ void ProgramGuiWindow::simulate() {
     QStringList lines = m_texteditProgram->toPlainText().split('\n');
     QVector<PulseStateCommand> commands;
     const char* error = NULL;
+    unsigned repeatDepth = 0;
 
     for (int i = 0; i < lines.size(); ++i) {
         m_texteditStatus->moveCursor(QTextCursor::End);
         m_texteditStatus->insertPlainText(QString::number(i+1) + "> " + lines[i] + "\n");
         if (lines[i].size() != 0) {
             commands.push_back(PulseStateCommand());
-            commands.back().parseFromString(lines[i].toUtf8(), &error);
+            commands.back().parseFromString(lines[i].toUtf8(), &error, &repeatDepth);
             if (error) {
                 m_texteditStatus->insertPlainText(QString::fromUtf8(error) + "\n");
                 m_texteditStatus->moveCursor(QTextCursor::End);
@@ -187,6 +191,7 @@ void ProgramGuiWindow::simulate() {
     const float high = 0.4;
 
     PulseChannel channels[numChannels];
+    RepeatStack stack;
     int runningLine = 0;
     Microseconds time = 0;
     Microseconds timeInState = 0;
@@ -212,9 +217,11 @@ void ProgramGuiWindow::simulate() {
         Microseconds commandTimeAvailable = timeStep;
 
         // if the command finishes, advance to the next command
-        if (commands[runningLine].execute(
-                    channels, timeInState, &commandTimeAvailable)) {
-            ++runningLine;
+        int step = commands[runningLine].execute(
+                    channels, &stack, runningLine,
+                    timeInState, &commandTimeAvailable);
+        if (step != 0) {
+            runningLine += step;
             timeInState = 0;
             timeStep -= commandTimeAvailable;
         } else {

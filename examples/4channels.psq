@@ -10,4 +10,4 @@ turn off channel 3
 set channel 4 to 15 ms pulses at 30 Hz
 wait 1 s
 turn off channel 4
-end
+end program

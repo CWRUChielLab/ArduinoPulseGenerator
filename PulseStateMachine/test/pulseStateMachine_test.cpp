@@ -90,15 +90,15 @@ void runPulseStateCommandParsingTests() {
     {
         PulseStateCommand c;
         const char* error;
-        c.parseFromString("end program", &error);
+        c.parseFromString("end program", &error, NULL);
         assert(error == NULL);
-        assert(c.type == PulseStateCommand::end);
+        assert(c.type == PulseStateCommand::endProgram);
     }
     {
         PulseStateCommand c;
         const char* error;
         // fractional s, fractional Hz
-        c.parseFromString("set channel 2 to 2.31 s pulses at 0.125 Hz", &error);
+        c.parseFromString("set channel 2 to 2.31 s pulses at 0.125 Hz", &error, NULL);
         assert(error == NULL);
         assert(c.type == PulseStateCommand::setChannel);
         assert(c.channel == 2);
@@ -109,7 +109,7 @@ void runPulseStateCommandParsingTests() {
         PulseStateCommand c;
         const char* error;
         // ms, fractional Hz
-        c.parseFromString("set channel 2 to 30 ms pulses at .5 Hz", &error);
+        c.parseFromString("set channel 2 to 30 ms pulses at .5 Hz", &error, NULL);
         assert(error == NULL);
         assert(c.type == PulseStateCommand::setChannel);
         assert(c.channel == 2);
@@ -120,7 +120,7 @@ void runPulseStateCommandParsingTests() {
         PulseStateCommand c;
         const char* error;
         // us micro, integer Hz
-        c.parseFromString("set channel 3 to 213 us pulses at 2000 Hz", &error);
+        c.parseFromString("set channel 3 to 213 us pulses at 2000 Hz", &error, NULL);
         assert(error == NULL);
         assert(c.type == PulseStateCommand::setChannel);
         assert(c.channel == 3);
@@ -131,7 +131,7 @@ void runPulseStateCommandParsingTests() {
         PulseStateCommand c;
         const char* error;
         // Latin-1 micro, integer kHz
-        c.parseFromString("set channel 2 to  182 \xB5s pulses at 4 kHz", &error);
+        c.parseFromString("set channel 2 to  182 \xB5s pulses at 4 kHz", &error, NULL);
         assert(error == NULL);
         assert(c.type == PulseStateCommand::setChannel);
         assert(c.channel == 2);
@@ -142,7 +142,7 @@ void runPulseStateCommandParsingTests() {
         PulseStateCommand c;
         const char* error;
         // utf-8 micro and decimal kHz, extra whitespace
-        c.parseFromString("  set channel  1  to  13  \u00B5s  pulses  at 2.5 kHz", &error);
+        c.parseFromString("  set channel  1  to  13  \u00B5s  pulses  at 2.5 kHz", &error, NULL);
         assert(error == NULL);
         assert(c.type == PulseStateCommand::setChannel);
         assert(c.channel == 1);
@@ -153,7 +153,7 @@ void runPulseStateCommandParsingTests() {
         PulseStateCommand c;
         const char* error;
         // utf-8 greek lowercase mu and fractional Hz, extra tabs
-        c.parseFromString("\tset channel  4  to \t 13000  \u03BCs  \t pulses  at  \t2.5 Hz", &error);
+        c.parseFromString("\tset channel  4  to \t 13000  \u03BCs  \t pulses  at  \t2.5 Hz", &error, NULL);
         assert(error == NULL);
         assert(c.type == PulseStateCommand::setChannel);
         assert(c.channel == 4);
@@ -163,7 +163,7 @@ void runPulseStateCommandParsingTests() {
     {
         PulseStateCommand c;
         const char* error;
-        c.parseFromString("turn off channel 4", &error);
+        c.parseFromString("turn off channel 4", &error, NULL);
         assert(error == NULL);
         assert(c.type == PulseStateCommand::setChannel);
         assert(c.channel == 4);
@@ -173,7 +173,7 @@ void runPulseStateCommandParsingTests() {
     {
         PulseStateCommand c;
         const char* error;
-        c.parseFromString("turn on channel 2", &error);
+        c.parseFromString("turn on channel 2", &error, NULL);
         assert(error == NULL);
         assert(c.type == PulseStateCommand::setChannel);
         assert(c.channel == 2);
@@ -183,10 +183,29 @@ void runPulseStateCommandParsingTests() {
     {
         PulseStateCommand c;
         const char* error;
-        c.parseFromString("wait 273 ms", &error);
+        c.parseFromString("wait 273 ms", &error, NULL);
         assert(error == NULL);
         assert(c.type == PulseStateCommand::wait);
         assert(c.waitTime == 273000);
+    }
+    {
+        PulseStateCommand c;
+        const char* error;
+        unsigned repeatDepth = 3;
+        c.parseFromString("repeat 10 times:", &error, &repeatDepth);
+        assert(error == NULL);
+        assert(c.type == PulseStateCommand::repeat);
+        assert(c.repeatCount == 10);
+        assert(repeatDepth == 4);
+    }
+    {
+        PulseStateCommand c;
+        const char* error;
+        unsigned repeatDepth = 6;
+        c.parseFromString("end repeat", &error, &repeatDepth);
+        assert(error == NULL);
+        assert(c.type == PulseStateCommand::endRepeat);
+        assert(repeatDepth == 5);
     }
 
     // Error tests
@@ -194,8 +213,29 @@ void runPulseStateCommandParsingTests() {
         PulseStateCommand c;
         const char* error;
         assert(numChannels == 4);
-        c.parseFromString("turn off channel 5", &error);
-        assert(error && strcmp(error, "Channel number must be between 1 and 4") == 0);
+        c.parseFromString("turn off channel 5", &error, NULL);
+        assert(error && strcmp(error, "channel number must be between 1 and 4") == 0);
+    }
+    {
+        PulseStateCommand c;
+        const char* error;
+        assert(numChannels == 4);
+        c.parseFromString("end", &error, NULL);
+        assert(error && strcmp(error, "expected \"repeat\" or \"program\"") == 0);
+    }
+    {
+        PulseStateCommand c;
+        const char* error;
+        unsigned repeatDepth = 0;
+        c.parseFromString("end repeat", &error, &repeatDepth);
+        assert(error && strcmp(error, "found \"end repeat\" without matching \"repeat\"") == 0);
+    }
+    {
+        PulseStateCommand c;
+        const char* error;
+        unsigned repeatDepth = maxRepeatNesting;
+        c.parseFromString("repeat 10 times:", &error, &repeatDepth);
+        assert(error && strcmp(error, "repeats nested too deeply") == 0);
     }
     // TODO: tests for other error messages.
 
@@ -204,23 +244,23 @@ void runPulseStateCommandParsingTests() {
 
 
 void runPulseStateCommandExecuteTests() {
-    bool completed;
+    int step;
 
     // should be able to run commands
     {
         PulseStateCommand c;
         Microseconds remainingTime = 100;
 
-        c.type = PulseStateCommand::end;
+        c.type = PulseStateCommand::endProgram;
 
-        completed = c.execute(NULL, 0, &remainingTime);
+        step = c.execute(NULL, NULL, 0, 0, &remainingTime);
         assert(remainingTime == 0);
-        assert(!completed);
+        assert(step == 0);
 
         remainingTime = 100;
-        completed = c.execute(NULL, 100, &remainingTime);
+        step = c.execute(NULL, NULL, 0, 100, &remainingTime);
         assert(remainingTime == 0);
-        assert(!completed);
+        assert(step == 0);
     }
     {
         PulseStateCommand c;
@@ -231,10 +271,10 @@ void runPulseStateCommandExecuteTests() {
         c.onTime = 12;
         c.offTime = 10;
 
-        completed = c.execute(p, 0, NULL);
+        step = c.execute(p, NULL, 0, 0, NULL);
         assert(p[0].onTime() == 12);
         assert(p[0].offTime() == 10);
-        assert(completed);
+        assert(step == 1);
     }
     {
         PulseStateCommand c;
@@ -243,14 +283,57 @@ void runPulseStateCommandExecuteTests() {
         c.type = PulseStateCommand::wait;
         c.waitTime = 120;
 
-        completed = c.execute(NULL, 0, &remainingTime);
+        step = c.execute(NULL, NULL, 0, 0, &remainingTime);
         assert(remainingTime == 0);
-        assert(!completed);
+        assert(step == 0);
 
         remainingTime = 70;
-        completed = c.execute(NULL, 100, &remainingTime);
+        step = c.execute(NULL, NULL, 0, 100, &remainingTime);
         assert(remainingTime == 50);
-        assert(completed);
+        assert(step == 1);
+    }
+    {
+        PulseStateCommand c;
+        PulseChannel p[numChannels];
+        RepeatStack stack;
+
+        c.type = PulseStateCommand::repeat;
+        c.repeatCount = 13;
+        stack.pushRepeat(42, 83);
+
+        step = c.execute(p, &stack, 5, 0, NULL);
+        assert(step == 1);
+        assert(stack.getLoopTarget() == 6);
+        stack.pop();
+        assert(stack.getLoopTarget() == 42);
+        assert(stack.decrementRepeatCount() == 82);
+    }
+    {
+        PulseStateCommand c;
+        PulseChannel p[numChannels];
+        RepeatStack stack;
+
+        c.type = PulseStateCommand::endRepeat;
+
+        stack.pushRepeat(23, 83);
+        step = c.execute(p, &stack, 42, 0, NULL);
+        assert(step == 23 - 42);
+        assert(stack.decrementRepeatCount() == 81);
+        assert(stack.getLoopTarget() == 23);
+    }
+    {
+        PulseStateCommand c;
+        PulseChannel p[numChannels];
+        RepeatStack stack;
+
+        c.type = PulseStateCommand::endRepeat;
+
+        stack.pushRepeat(42, 83);
+        stack.pushRepeat(17, 1);
+        step = c.execute(p, &stack, 23, 0, NULL);
+        assert(step == 1);
+        assert(stack.decrementRepeatCount() == 82);
+        assert(stack.getLoopTarget() == 42);
     }
 }
 

@@ -181,19 +181,72 @@ static bool consumeFrequency(const char* input, int* index, Microseconds* result
 }
 
 
-void PulseStateCommand::parseFromString(const char* input, const char** error) {
+void PulseStateCommand::parseFromString(const char* input, const char** error,
+        unsigned* repeatDepth) {
     int index = 0;
     uint32_t val;
 
     consumeWhitespace(input, &index);
     if (input[index] == 'e') {
-        // e.g. "end"
+        // e.g. "end program" or "end repeat"
         if (!consumeToken("end", input, &index)) {
             *error = "unrecognized command";
             return;
         }
-        type = end;
+        consumeWhitespace(input, &index);
 
+        if (input[index] == 'p') {
+            if (!consumeToken("program", input, &index)) {
+                *error = "unrecognized command";
+                return;
+            }
+            type = endProgram;
+        } else if (input[index] == 'r') {
+            if (!consumeToken("repeat", input, &index)) {
+                *error = "unrecognized command";
+                return;
+            }
+            if (*repeatDepth == 0) {
+                *error = "found \"end repeat\" without matching \"repeat\"";
+                return;
+            }
+            type = endRepeat;
+            *repeatDepth -= 1;
+        } else {
+            *error = "expected \"repeat\" or \"program\"";
+            return;
+        }
+
+    } else if (input[index] == 'r') {
+        // e.g. "repeat 12 times:"
+        if (!consumeToken("repeat", input, &index)) {
+            *error = "unrecognized command";
+            return;
+        }
+        type = repeat;
+
+        consumeWhitespace(input, &index);
+        if (!consumeUInt32(input, &index, &repeatCount)) {
+            *error = "expected repeat count";
+            return;
+        }
+
+        consumeWhitespace(input, &index);
+        if (!consumeToken("times", input, &index)) {
+            *error = "expected \"times\"";
+            return;
+        }
+
+        consumeWhitespace(input, &index);
+        if (!consumeToken(":", input, &index)) {
+            *error = "expected \":\"";
+            return;
+        }
+        if (*repeatDepth == maxRepeatNesting) {
+            *error = "repeats nested too deeply";
+            return;
+        }
+        *repeatDepth += 1;
 
     } else if (input[index] == 's') {
         // e.g. "set channel 3 to 213 us pulses at 15.1 Hz"
@@ -215,7 +268,7 @@ void PulseStateCommand::parseFromString(const char* input, const char** error) {
             return;
         }
         if (val > numChannels || val == 0) {
-            *error = "Channel number must be between 1 and 4";
+            *error = "channel number must be between 1 and 4";
             return;
         }
         channel = val;
@@ -290,7 +343,7 @@ void PulseStateCommand::parseFromString(const char* input, const char** error) {
             return;
         }
         if (val > numChannels || val == 0) {
-            *error = "Channel number must be between 1 and 4";
+            *error = "channel number must be between 1 and 4";
             return;
         }
         channel = val;
@@ -318,26 +371,41 @@ void PulseStateCommand::parseFromString(const char* input, const char** error) {
 }
 
 
-bool PulseStateCommand::execute(PulseChannel* channels,
-        Microseconds timeInState, Microseconds* timeAvailable) {
+int PulseStateCommand::execute(PulseChannel* channels, RepeatStack* stack,
+                int commandId, Microseconds timeInState,
+                Microseconds* timeAvailable) {
     switch (type) {
         default:
-        case end:
+        case endProgram:
             *timeAvailable = 0;
-            return false;
+            return 0;
 
         case setChannel:
             channels[channel - 1].setOnOffTime(onTime, offTime);
-            return true;
+            return 1;
 
         case wait:
             if (waitTime > *timeAvailable + timeInState) {
                 *timeAvailable = 0;
-                return false;
+                return 0;
             } else {
                 *timeAvailable -= waitTime - timeInState;
-                return true;
+                return 1;
             }
+
+        case endRepeat:
+            if (stack->decrementRepeatCount() > 0) {
+                // repeat
+                return stack->getLoopTarget() - commandId;
+            } else {
+                // loop completed
+                stack->pop();
+                return 1;
+            }
+
+        case repeat:
+            stack->pushRepeat(commandId + 1, repeatCount);
+            return 1;
     }
 };
 

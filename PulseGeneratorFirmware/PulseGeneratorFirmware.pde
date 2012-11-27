@@ -5,8 +5,9 @@ char inputLine[maxInputLength + 1];
 int numChars = 0;
 
 int lineNum = 0;
-const int maxLines = 80;
+const int maxLines = 200;
 PulseStateCommand commands[maxLines];
+unsigned repeatDepth = 0;
 
 int channelPins[numChannels] = { 2, 3, 4, 5 };
 
@@ -43,16 +44,17 @@ void loop() {
                 Serial.println(" characters)");
             } else {
                 const char* error = NULL;
-                commands[lineNum].parseFromString(inputLine, &error);
+                commands[lineNum].parseFromString(inputLine, &error, &repeatDepth);
 
                 if (error) {
                     Serial.print("error: ");
                     Serial.println(error);
-                } else if (commands[lineNum].type == PulseStateCommand::end) {
+                } else if (commands[lineNum].type == PulseStateCommand::endProgram) {
                     // run the program
                     Serial.println("Running program...");
 
                     PulseChannel channels[numChannels];
+                    RepeatStack stack;
                     int runningLine = 0;
                     Microseconds prevTime = micros();
                     Microseconds timeInState = 0;
@@ -73,10 +75,13 @@ void loop() {
                             channels[i].advanceTime(timeAvailable);
                         }
 
+                        int step;
+
                         // run commands until we're out of time
-                        while (commands[runningLine].execute(
-                                    channels, timeInState, &timeAvailable)) {
-                            ++runningLine;
+                        while (0 != (step = commands[runningLine].execute(
+                                    channels, &stack, runningLine,
+                                    timeInState, &timeAvailable))) {
+                            runningLine += step;
                             timeInState = 0;
                             lastTimeAvailable = timeAvailable;
                         }
@@ -100,6 +105,7 @@ void loop() {
                     Serial.print(maxLines);
                     Serial.println(" lines)");
                     lineNum = 0;
+                    repeatDepth = 0;
                 } else {
                     lineNum++;
                 }

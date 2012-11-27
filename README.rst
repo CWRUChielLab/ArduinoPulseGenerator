@@ -33,7 +33,7 @@ program will generate 15 ms pulses on channel 1 for 3 seconds::
     set channel 1 to 15 ms pulses at 10 Hz
     wait 3 s
     turn off channel 1
-    end
+    end program
 
 Channels 1, 2, 3, and 4 are mapped to arduino pins 2, 3, 4 and 5
 respectively.
