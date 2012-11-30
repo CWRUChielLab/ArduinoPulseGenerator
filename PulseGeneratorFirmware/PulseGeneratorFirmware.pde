@@ -4,9 +4,10 @@ const int maxInputLength = 80;
 char inputLine[maxInputLength + 1];
 int numChars = 0;
 
-int lineNum = 0;
-const int maxLines = 200;
-PulseStateCommand commands[maxLines];
+int lineNum = 1;
+const int maxCommands = 200;
+PulseStateCommand commands[maxCommands];
+int numCommands = 0;
 unsigned repeatDepth = 0;
 
 int channelPins[numChannels] = { 2, 3, 4, 5, 8, 9, 10, 11 };
@@ -44,23 +45,23 @@ void loop() {
                 Serial.println(" characters)");
             } else {
                 const char* error = NULL;
-                commands[lineNum].parseFromString(inputLine, &error, &repeatDepth);
+                commands[numCommands].parseFromString(inputLine, &error, &repeatDepth);
 
                 if (error) {
                     Serial.print("error: ");
                     Serial.println(error);
-                } else if (commands[lineNum].type == PulseStateCommand::endProgram) {
+                } else if (commands[numCommands].type == PulseStateCommand::endProgram) {
                     // run the program
                     Serial.println("Running program...");
 
                     PulseChannel channels[numChannels];
                     RepeatStack stack;
-                    int runningLine = 0;
+                    int runningCommandIndex = 0;
                     Microseconds prevTime = micros();
                     Microseconds timeInState = 0;
 
                     Microseconds maxError = 0;
-                    while (runningLine < lineNum) {
+                    while (runningCommandIndex < numCommands) {
                         Microseconds newTime = micros();
                         Microseconds timeAvailable = newTime - prevTime;
                         Microseconds lastTimeAvailable = timeAvailable;
@@ -78,10 +79,10 @@ void loop() {
                         int step;
 
                         // run commands until we're out of time
-                        while (0 != (step = commands[runningLine].execute(
-                                    channels, &stack, runningLine,
+                        while (0 != (step = commands[runningCommandIndex].execute(
+                                    channels, &stack, runningCommandIndex,
                                     timeInState, &timeAvailable))) {
-                            runningLine += step;
+                            runningCommandIndex += step;
                             timeInState = 0;
                             lastTimeAvailable = timeAvailable;
                         }
@@ -95,24 +96,29 @@ void loop() {
                         prevTime = newTime;
                     }
 
-                    lineNum = 0;
+                    lineNum = 1;
+                    numCommands = 0;
                     Serial.print("done.  (timing precision was better than ");
                     Serial.print(maxError);
                     Serial.println(" microseconds)");
 
-                } else if (lineNum == maxLines - 1) {
+                } else if (numCommands == maxCommands - 1) {
                     Serial.print("Error: program too long (max ");
-                    Serial.print(maxLines);
-                    Serial.println(" lines)");
-                    lineNum = 0;
+                    Serial.print(maxCommands);
+                    Serial.println(" commands)");
+                    lineNum = 1;
+                    numCommands = 0;
                     repeatDepth = 0;
+                } else if (commands[numCommands].type == PulseStateCommand::noOp) {
+                    lineNum++;
                 } else {
                     lineNum++;
+                    numCommands++;
                 }
             }
 
             numChars = 0;
-            Serial.print(lineNum + 1);
+            Serial.print(lineNum);
             Serial.print(": ");
         } else if (numChars < maxInputLength) {
             inputLine[numChars++] = thisChar;
