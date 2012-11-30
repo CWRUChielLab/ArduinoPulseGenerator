@@ -260,14 +260,13 @@ void runPulseStateCommandParsingTests() {
     {
         PulseStateCommand c;
         const char* error;
-        assert(numChannels == 4);
-        c.parseFromString("turn off channel 5", &error, NULL);
-        assert(error && strcmp(error, "channel number must be between 1 and 4") == 0);
+        assert(numChannels == 8);
+        c.parseFromString("turn off channel 9", &error, NULL);
+        assert(error && strcmp(error, "channel number must be between 1 and 8") == 0);
     }
     {
         PulseStateCommand c;
         const char* error;
-        assert(numChannels == 4);
         c.parseFromString("end", &error, NULL);
         assert(error && strcmp(error, "expected \"repeat\" or \"program\"") == 0);
     }
