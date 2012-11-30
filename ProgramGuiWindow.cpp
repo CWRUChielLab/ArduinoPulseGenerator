@@ -170,6 +170,7 @@ void ProgramGuiWindow::simulate() {
     QVector<PulseStateCommand> commands;
     const char* error = NULL;
     unsigned repeatDepth = 0;
+    bool endProgramFound = 0;
 
     for (int i = 0; i < lines.size(); ++i) {
         m_texteditStatus->moveCursor(QTextCursor::End);
@@ -177,12 +178,28 @@ void ProgramGuiWindow::simulate() {
         if (lines[i].size() != 0) {
             commands.push_back(PulseStateCommand());
             commands.back().parseFromString(lines[i].toUtf8(), &error, &repeatDepth);
+
+            if (!error) {
+                if (commands.back().type == PulseStateCommand::endProgram) {
+                    endProgramFound = true;
+                } else if (endProgramFound &&
+                        commands.back().type != PulseStateCommand::noOp) {
+                    error = "unexpected command found after end of program";
+                }
+            }
+
             if (error) {
-                m_texteditStatus->insertPlainText(QString::fromUtf8(error) + "\n");
                 m_texteditStatus->moveCursor(QTextCursor::End);
+                m_texteditStatus->insertPlainText(QString::fromUtf8(error) + "\n");
                 return;
             }
         }
+    }
+
+    if (!endProgramFound) {
+        m_texteditStatus->moveCursor(QTextCursor::End);
+        m_texteditStatus->insertPlainText("missing \"end program\"\n");
+        return;
     }
 
 
@@ -205,7 +222,8 @@ void ProgramGuiWindow::simulate() {
                     (channels[i].on() ? high : low) - i - 1));
     }
 
-    while (runningLine < commands.size() - 1 && steps < maxSteps) {
+    while (commands[runningLine].type != PulseStateCommand::endProgram &&
+            steps < maxSteps) {
         ++steps;
 
         // calculate the maximum amount of time before a channel changes
