@@ -51,8 +51,18 @@ static void consumeWhitespace(const char* input, int* index) {
     int i = 0;
 
     while (input[*index + i] == ' ' || input[*index + i] == '\t' ||
-            input[*index + i] == '\n' || input[*index + i] == '\r') {
-        i++;
+            input[*index + i] == '\n' || input[*index + i] == '\r'|| 
+            input[*index + i] == '#') {
+
+        if (input[*index + i] == '#') {
+            // for comments, read to end of line/string
+            while (input[*index + i] != '\n' && input[*index + i] != '\r' &&
+                    input[*index + i] != 0) {
+                i++;
+            }
+        } else {
+            i++;
+        }
     }
 
     *index += i;
@@ -187,7 +197,10 @@ void PulseStateCommand::parseFromString(const char* input, const char** error,
     uint32_t val;
 
     consumeWhitespace(input, &index);
-    if (input[index] == 'e') {
+    if (input[index] == 0) {
+        // empty line, comment, etc.
+        type = noOp;
+    } else if (input[index] == 'e') {
         // e.g. "end program" or "end repeat"
         if (!consumeToken("end", input, &index)) {
             *error = "unrecognized command";
@@ -376,6 +389,9 @@ int PulseStateCommand::execute(PulseChannel* channels, RepeatStack* stack,
                 Microseconds* timeAvailable) {
     switch (type) {
         default:
+        case noOp:
+            return 1;
+
         case endProgram:
             *timeAvailable = 0;
             return 0;

@@ -88,9 +88,49 @@ void runPulseChannelTests() {
 void runPulseStateCommandParsingTests() {
     // Basic parsing tests
     {
+        // completely empty line
+        PulseStateCommand c;
+        const char* error;
+        c.parseFromString("", &error, NULL);
+        assert(error == NULL);
+        assert(c.type == PulseStateCommand::noOp);
+    }
+    {
+        // line with only whitespace
+        PulseStateCommand c;
+        const char* error;
+        c.parseFromString(" \t", &error, NULL);
+        assert(error == NULL);
+        assert(c.type == PulseStateCommand::noOp);
+    }
+    {
+        // line with just a comment
+        PulseStateCommand c;
+        const char* error;
+        c.parseFromString("# a comment", &error, NULL);
+        assert(error == NULL);
+        assert(c.type == PulseStateCommand::noOp);
+    }
+    {
+        // line with indented comment
+        PulseStateCommand c;
+        const char* error;
+        c.parseFromString("   # a comment", &error, NULL);
+        assert(error == NULL);
+        assert(c.type == PulseStateCommand::noOp);
+    }
+    {
         PulseStateCommand c;
         const char* error;
         c.parseFromString("end program", &error, NULL);
+        assert(error == NULL);
+        assert(c.type == PulseStateCommand::endProgram);
+    }
+    {
+        // line ending with a comment
+        PulseStateCommand c;
+        const char* error;
+        c.parseFromString("end program # forever", &error, NULL);
         assert(error == NULL);
         assert(c.type == PulseStateCommand::endProgram);
     }
@@ -261,6 +301,14 @@ void runPulseStateCommandExecuteTests() {
         step = c.execute(NULL, NULL, 0, 100, &remainingTime);
         assert(remainingTime == 0);
         assert(step == 0);
+    }
+    {
+        PulseStateCommand c;
+
+        c.type = PulseStateCommand::noOp;
+
+        step = c.execute(NULL, NULL, 0, 0, NULL);
+        assert(step == 1);
     }
     {
         PulseStateCommand c;
