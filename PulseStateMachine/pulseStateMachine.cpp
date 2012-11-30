@@ -1,6 +1,7 @@
 #include "pulseStateMachine.h"
 #include <stddef.h>
 
+
 PulseChannel::PulseChannel()
     : m_on(false), m_timeInState(0)
 {
@@ -377,6 +378,12 @@ void PulseStateCommand::parseFromString(const char* input, const char** error,
         }
     } else {
         *error = "unrecognized command";
+        return;
+    }
+
+    consumeWhitespace(input, &index);
+    if (input[index] != 0) {
+        *error = "unexpected text found after end of command";
         return;
     }
 

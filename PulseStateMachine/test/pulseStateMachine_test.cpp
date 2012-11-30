@@ -252,6 +252,12 @@ void runPulseStateCommandParsingTests() {
     {
         PulseStateCommand c;
         const char* error;
+        c.parseFromString("turn off channel 2 some day", &error, NULL);
+        assert(error && strcmp(error, "unexpected text found after end of command") == 0);
+    }
+    {
+        PulseStateCommand c;
+        const char* error;
         assert(numChannels == 4);
         c.parseFromString("turn off channel 5", &error, NULL);
         assert(error && strcmp(error, "channel number must be between 1 and 4") == 0);
