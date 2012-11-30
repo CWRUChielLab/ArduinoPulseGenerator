@@ -205,6 +205,17 @@ void runPulseStateCommandParsingTests() {
     {
         PulseStateCommand c;
         const char* error;
+        // "every" version
+        c.parseFromString("set channel 2 to 2.31 s pulses every 5 s", &error, NULL);
+        assert(error == NULL);
+        assert(c.type == PulseStateCommand::setChannel);
+        assert(c.channel == 2);
+        assertClose(c.onTime, 2310000);
+        assertClose(c.offTime, 5000000 - 2310000);
+    }
+    {
+        PulseStateCommand c;
+        const char* error;
         c.parseFromString("turn off channel 4", &error, NULL);
         assert(error == NULL);
         assert(c.type == PulseStateCommand::setChannel);
@@ -307,6 +318,13 @@ void runPulseStateCommandParsingTests() {
         unsigned repeatDepth = 0;
         c.parseFromString("repeat 4294967296 times:", &error, &repeatDepth);
         assert(error && strcmp(error, "expected repeat count") == 0);
+    }
+    {
+        // number too large edge case
+        PulseStateCommand c;
+        const char* error;
+        c.parseFromString("set channel 2 to 30 ms pulses at 100 Hz", &error, NULL);
+        assert(error && strcmp(error, "pulse duration longer than total period") == 0);
     }
     // TODO: tests for other error messages.
 

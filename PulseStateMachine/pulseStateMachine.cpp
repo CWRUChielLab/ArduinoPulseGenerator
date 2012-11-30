@@ -317,18 +317,37 @@ void PulseStateCommand::parseFromString(const char* input, const char** error,
         }
 
         consumeWhitespace(input, &index);
-        if (!consumeToken("at", input, &index)) {
-            *error = "expected \"at\"";
-            return;
-        }
 
-        consumeWhitespace(input, &index);
         Microseconds period;
-        if (!consumeFrequency(input, &index, &period)) {
-            *error = "expected frequency, e.g. \"2.3 Hz\" or \"15 kHz\"";
-            return;
+        if (input[index] == 'a') { // e.g. "at 12 Hz"
+            if (!consumeToken("at", input, &index)) {
+                *error = "expected \"at\" or \"every\"";
+                return;
+            }
+
+            consumeWhitespace(input, &index);
+            if (!consumeFrequency(input, &index, &period)) {
+                *error = "expected frequency, e.g. \"2.3 Hz\" or \"15 kHz\"";
+                return;
+            }
+        } else { // e.g. "every 2 s"
+            if (!consumeToken("every", input, &index)) {
+                *error = "expected \"at\" or \"every\"";
+                return;
+            }
+
+            consumeWhitespace(input, &index);
+            if (!consumeTime(input, &index, &period)) {
+                *error = "expected time, e.g. \"2 s\", "
+                    "\"13 ms\", \"12 us\", or \"15 \u00B5s\"";
+                return;
+            }
         }
 
+        if (period < onTime) {
+            *error = "pulse duration longer than total period";
+            return;
+        }
         offTime = period - onTime;
 
     } else if (input[index] == 't') {
