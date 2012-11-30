@@ -214,6 +214,10 @@ void PulseStateCommand::parseFromString(const char* input, const char** error,
                 *error = "unrecognized command";
                 return;
             }
+            if (*repeatDepth != 0) {
+                *error = "found \"end program\" while still expecting an \"end repeat\"";
+                return;
+            }
             type = endProgram;
         } else if (input[index] == 'r') {
             if (!consumeToken("repeat", input, &index)) {

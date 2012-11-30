@@ -122,7 +122,8 @@ void runPulseStateCommandParsingTests() {
     {
         PulseStateCommand c;
         const char* error;
-        c.parseFromString("end program", &error, NULL);
+        unsigned repeatDepth = 0;
+        c.parseFromString("end program", &error, &repeatDepth);
         assert(error == NULL);
         assert(c.type == PulseStateCommand::endProgram);
     }
@@ -130,7 +131,8 @@ void runPulseStateCommandParsingTests() {
         // line ending with a comment
         PulseStateCommand c;
         const char* error;
-        c.parseFromString("end program # forever", &error, NULL);
+        unsigned repeatDepth = 0;
+        c.parseFromString("end program # forever", &error, &repeatDepth);
         assert(error == NULL);
         assert(c.type == PulseStateCommand::endProgram);
     }
@@ -275,6 +277,13 @@ void runPulseStateCommandParsingTests() {
         unsigned repeatDepth = 0;
         c.parseFromString("end repeat", &error, &repeatDepth);
         assert(error && strcmp(error, "found \"end repeat\" without matching \"repeat\"") == 0);
+    }
+    {
+        PulseStateCommand c;
+        const char* error;
+        unsigned repeatDepth = 1;
+        c.parseFromString("end program", &error, &repeatDepth);
+        assert(error && strcmp(error, "found \"end program\" while still expecting an \"end repeat\"") == 0);
     }
     {
         PulseStateCommand c;
