@@ -9,7 +9,7 @@ typedef uint32_t Microseconds;
 const Microseconds forever = 0xFFFFFFFF;
 
 // Maximum number of pulse channels supported by the firmware.
-const unsigned numChannels = 4;
+const unsigned numChannels = 8;
 
 // Maximum number of nested repeats
 const unsigned maxRepeatNesting = 20;

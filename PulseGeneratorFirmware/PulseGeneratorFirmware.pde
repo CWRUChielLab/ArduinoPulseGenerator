@@ -9,7 +9,7 @@ const int maxLines = 200;
 PulseStateCommand commands[maxLines];
 unsigned repeatDepth = 0;
 
-int channelPins[numChannels] = { 2, 3, 4, 5 };
+int channelPins[numChannels] = { 2, 3, 4, 5, 8, 9, 10, 11 };
 
 void setup() {
     // set up the pins as outputs

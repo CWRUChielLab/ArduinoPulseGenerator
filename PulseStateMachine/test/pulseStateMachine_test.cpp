@@ -292,6 +292,23 @@ void runPulseStateCommandParsingTests() {
         c.parseFromString("repeat 10 times:", &error, &repeatDepth);
         assert(error && strcmp(error, "repeats nested too deeply") == 0);
     }
+    {
+        // number too large - this isn't a great error message, but it's not
+        // a common error.
+        PulseStateCommand c;
+        const char* error;
+        unsigned repeatDepth = 0;
+        c.parseFromString("repeat 5000000000 times:", &error, &repeatDepth);
+        assert(error && strcmp(error, "expected repeat count") == 0);
+    }
+    {
+        // number too large edge case
+        PulseStateCommand c;
+        const char* error;
+        unsigned repeatDepth = 0;
+        c.parseFromString("repeat 4294967296 times:", &error, &repeatDepth);
+        assert(error && strcmp(error, "expected repeat count") == 0);
+    }
     // TODO: tests for other error messages.
 
     // cout << "Error: " << (error ? error : "none") << endl;

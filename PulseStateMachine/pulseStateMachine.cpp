@@ -69,7 +69,6 @@ static void consumeWhitespace(const char* input, int* index) {
     *index += i;
 }
 
-
 static bool consumeUInt32(const char* input, int* index, uint32_t* result) {
     uint32_t val = 0;
 
@@ -78,8 +77,15 @@ static bool consumeUInt32(const char* input, int* index, uint32_t* result) {
     }
 
     while (input[*index] >= '0' && input[*index] <= '9') {
-        val = 10 * val + input[*index] - '0';
+        uint32_t val10 = 10 * val;
+        uint32_t newVal = val10 + input[*index] - '0';
         (*index)++;
+
+        if (val10 / 10 != val || newVal < val10) {
+            // overflow
+            return false;
+        }
+        val = newVal;
     }
 
     *result = val;
@@ -286,7 +292,7 @@ void PulseStateCommand::parseFromString(const char* input, const char** error,
             return;
         }
         if (val > numChannels || val == 0) {
-            *error = "channel number must be between 1 and 4";
+            *error = "channel number must be between 1 and 8";
             return;
         }
         channel = val;
@@ -361,7 +367,7 @@ void PulseStateCommand::parseFromString(const char* input, const char** error,
             return;
         }
         if (val > numChannels || val == 0) {
-            *error = "channel number must be between 1 and 4";
+            *error = "channel number must be between 1 and 8";
             return;
         }
         channel = val;
