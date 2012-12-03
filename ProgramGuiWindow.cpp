@@ -79,7 +79,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
 
     // and the buttons
     m_buttonHelp = new QPushButton("Help");
-    m_buttonRun = new QPushButton("Run");
+    m_buttonNew = new QPushButton("New");
     m_buttonOpen = new QPushButton("Open");
     m_buttonSave = new QPushButton("Save");
     m_buttonSimulate = new QPushButton("Simulate");
@@ -90,6 +90,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     // lay out the controls
     QHBoxLayout* buttonLayout = new QHBoxLayout;
     buttonLayout->addWidget(m_buttonHelp);
+    buttonLayout->addWidget(m_buttonNew);
     buttonLayout->addWidget(m_buttonOpen);
     buttonLayout->addWidget(m_buttonSave);
     buttonLayout->addWidget(m_buttonSimulate);
@@ -116,12 +117,15 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
 
     // attach signals as needed
     QObject::connect(m_buttonHelp, SIGNAL(clicked()), this, SLOT(help()));
+    QObject::connect(m_buttonNew, SIGNAL(clicked()), this, SLOT(newDocument()));
     QObject::connect(m_buttonOpen, SIGNAL(clicked()), this, SLOT(open()));
     QObject::connect(m_buttonSave, SIGNAL(clicked()), this, SLOT(save()));
     QObject::connect(m_buttonSimulate, SIGNAL(clicked()), this, SLOT(simulate()));
     QObject::connect(m_buttonRun, SIGNAL(clicked()), this, SLOT(run()));
     QObject::connect(m_comboPort, SIGNAL(editTextChanged(QString)), SLOT(onPortChanged()));
     QObject::connect(m_checkboxLock, SIGNAL(stateChanged(int)), SLOT(onLockStateChanged(int)));
+
+    setWindowTitle("Arduino Pulse Generator - new Program");
 
     m_port = NULL;
     onPortChanged();
@@ -130,11 +134,6 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
 
 QSize ProgramGuiWindow::sizeHint() const {
     return QSize(600,700);
-}
-
-
-void ProgramGuiWindow::help() {
-    QDesktopServices::openUrl(QUrl("http://kms15.github.com/ArduinoPulseGenerator/manual/"));
 }
 
 
@@ -172,6 +171,18 @@ void ProgramGuiWindow::onPortChanged() {
 }
 
 
+void ProgramGuiWindow::help() {
+    QDesktopServices::openUrl(QUrl("http://kms15.github.com/ArduinoPulseGenerator/manual/"));
+}
+
+
+void ProgramGuiWindow::newDocument() {
+    ProgramGuiWindow* newWindow = new ProgramGuiWindow();
+    newWindow->m_comboPort->setCurrentIndex(m_comboPort->currentIndex());
+    newWindow->show();
+}
+
+
 void ProgramGuiWindow::open() {
     QString fileName = QFileDialog::getOpenFileName(this,
             tr("Open Pulse Sequence"), "",
@@ -185,11 +196,14 @@ void ProgramGuiWindow::open() {
             return;
         }
         QTextStream in(&file);
-        m_texteditProgram->setText(in.readAll());
 
-        // disable the old simulation results and switch to the status tab
-        m_tabs->setCurrentIndex(m_tabs->indexOf(m_texteditStatus));
-        m_tabs->setTabEnabled(m_tabs->indexOf(m_plot), false);
+        ProgramGuiWindow* newWindow = new ProgramGuiWindow();
+
+        newWindow->setWindowTitle("Arduino Pulse Generator - " +
+                QFileInfo(fileName).baseName());
+        newWindow->m_comboPort->setCurrentIndex(m_comboPort->currentIndex());
+        newWindow->m_texteditProgram->setText(in.readAll());
+        newWindow->show();
     }
 }
 
@@ -208,6 +222,9 @@ void ProgramGuiWindow::save() {
         }
         QTextStream out(&file);
         out << m_texteditProgram->toPlainText();
+
+        setWindowTitle("Arduino Pulse Generator - " +
+                QFileInfo(fileName).baseName());
     }
 }
 

@@ -33,6 +33,7 @@ class ProgramGuiWindow : public QWidget
 
     // bottom buttons
     QPushButton* m_buttonHelp;
+    QPushButton* m_buttonNew;
     QPushButton* m_buttonOpen;
     QPushButton* m_buttonSave;
     QPushButton* m_buttonSimulate;
@@ -52,8 +53,9 @@ class ProgramGuiWindow : public QWidget
 
 private Q_SLOTS:
     void help();
-    void save();
+    void newDocument();
     void open();
+    void save();
     void simulate();
     void run();
 
