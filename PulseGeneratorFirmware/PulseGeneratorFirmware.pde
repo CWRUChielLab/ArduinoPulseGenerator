@@ -42,14 +42,15 @@ void loop() {
             if (numChars == maxInputLength) {
                 Serial.print("Line too long (must be shorter than ");
                 Serial.print(maxInputLength);
-                Serial.println(" characters)");
+                Serial.println(" characters)\07");
             } else {
                 const char* error = NULL;
                 commands[numCommands].parseFromString(inputLine, &error, &repeatDepth);
 
                 if (error) {
                     Serial.print("error: ");
-                    Serial.println(error);
+                    Serial.print(error);
+                    Serial.println("\07");
                 } else if (commands[numCommands].type == PulseStateCommand::endProgram) {
                     // run the program
                     Serial.println("Running program...");
@@ -98,14 +99,16 @@ void loop() {
 
                     lineNum = 1;
                     numCommands = 0;
+                    // N.B.: This message must be kept in sync with
+                    // ProgramGuiWindow.cpp
                     Serial.print("done.  (timing precision was better than ");
                     Serial.print(maxError);
-                    Serial.println(" microseconds)");
+                    Serial.println(" microseconds)\07");
 
                 } else if (numCommands == maxCommands - 1) {
-                    Serial.print("Error: program too long (max ");
+                    Serial.print("error: program too long (max ");
                     Serial.print(maxCommands);
-                    Serial.println(" commands)");
+                    Serial.println(" commands)\07");
                     lineNum = 1;
                     numCommands = 0;
                     repeatDepth = 0;

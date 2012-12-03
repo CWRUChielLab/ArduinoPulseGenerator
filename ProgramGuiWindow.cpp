@@ -23,6 +23,7 @@ class QwtShortPlot : public QwtPlot
     }
 };
 
+
 ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     QWidget(parent)
 {
@@ -137,18 +138,79 @@ void ProgramGuiWindow::help() {
 }
 
 
-void ProgramGuiWindow::run() {
-    // switch to the status tab
-    m_tabs->setCurrentIndex(m_tabs->indexOf(m_texteditStatus));
+void ProgramGuiWindow::onNewSerialData() {
+    if (m_port->bytesAvailable()) {
+        QString newData = QString::fromUtf8(m_port->readAll()).replace("\n","");
 
-    // split the text into a series of lines
-    m_sendBuffer = m_texteditProgram->toPlainText().split('\n');
+        // If we're done, close the serial port.  The bell character (ascii
+        // character 7) signals the end of the transmission or an error.
+        // N.B.: this message must be kept in sync with
+        // PulseGeneratorFirmware.pde
+        if (newData.contains('\07')) {
+            m_port->close();
+            delete m_port;
+            m_port = NULL;
+        } else {
+            // queue up one additional line per prompt
+            int numPrompts = newData.count(':');
+            while (numPrompts > 0 && !m_sendBuffer.isEmpty()) {
+                m_port->write((m_sendBuffer.front() + "\n").toUtf8());
+                m_sendBuffer.pop_front();
+                --numPrompts;
+            }
+        }
 
-    // send the first line (note that we can't safely send the entire program
-    // because the arduino has a very small receive buffer).
-    m_port->write((m_sendBuffer.front() + "\n").toUtf8());
-    m_sendBuffer.pop_front();
+        // display the new data
+        m_texteditStatus->moveCursor(QTextCursor::End);
+        m_texteditStatus->insertPlainText(newData);
+
+    }
 }
+
+
+void ProgramGuiWindow::onPortChanged() {
+}
+
+
+void ProgramGuiWindow::open() {
+    QString fileName = QFileDialog::getOpenFileName(this,
+            tr("Open Pulse Sequence"), "",
+            tr("Pulse Sequence (*.psq);;All Files (*)"));
+
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);
+        if (!file.open(QIODevice::ReadOnly)) {
+            QMessageBox::information(this, tr("Unable to open file"),
+                    file.errorString());
+            return;
+        }
+        QTextStream in(&file);
+        m_texteditProgram->setText(in.readAll());
+
+        // disable the old simulation results and switch to the status tab
+        m_tabs->setCurrentIndex(m_tabs->indexOf(m_texteditStatus));
+        m_tabs->setTabEnabled(m_tabs->indexOf(m_plot), false);
+    }
+}
+
+
+void ProgramGuiWindow::save() {
+    QString fileName = QFileDialog::getSaveFileName(this,
+            tr("Save Pulse Sequence"), "",
+            tr("Pulse Sequence (*.psq);;All Files (*)"));
+
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly)) {
+            QMessageBox::information(this, tr("Unable to open file"),
+                    file.errorString());
+            return;
+        }
+        QTextStream out(&file);
+        out << m_texteditProgram->toPlainText();
+    }
+}
+
 
 void ProgramGuiWindow::simulate() {
     // disable the old simulation results and switch to the status tab
@@ -290,76 +352,39 @@ void ProgramGuiWindow::simulate() {
 
 }
 
-void ProgramGuiWindow::open() {
-    QString fileName = QFileDialog::getOpenFileName(this,
-            tr("Open Pulse Sequence"), "",
-            tr("Pulse Sequence (*.psq);;All Files (*)"));
 
-    if (!fileName.isEmpty()) {
-        QFile file(fileName);
-        if (!file.open(QIODevice::ReadOnly)) {
-            QMessageBox::information(this, tr("Unable to open file"),
-                    file.errorString());
-            return;
-        }
-        QTextStream in(&file);
-        m_texteditProgram->setText(in.readAll());
-
-        // disable the old simulation results and switch to the status tab
-        m_tabs->setCurrentIndex(m_tabs->indexOf(m_texteditStatus));
-        m_tabs->setTabEnabled(m_tabs->indexOf(m_plot), false);
-    }
+void ProgramGuiWindow::onLockStateChanged(int state) {
+    m_buttonRun->setEnabled(state == Qt::Unchecked);
 }
 
-void ProgramGuiWindow::save() {
-    QString fileName = QFileDialog::getSaveFileName(this,
-            tr("Save Pulse Sequence"), "",
-            tr("Pulse Sequence (*.psq);;All Files (*)"));
 
-    if (!fileName.isEmpty()) {
-        QFile file(fileName);
-        if (!file.open(QIODevice::WriteOnly)) {
-            QMessageBox::information(this, tr("Unable to open file"),
-                    file.errorString());
-            return;
-        }
-        QTextStream out(&file);
-        out << m_texteditProgram->toPlainText();
-    }
-}
-
-void ProgramGuiWindow::onNewSerialData() {
-    if (m_port->bytesAvailable()) {
-        QString newData = QString::fromUtf8(m_port->readAll()).replace("\n","");
-
-        // queue up one additional line per prompt
-        int numPrompts = newData.count(':');
-        while (numPrompts > 0 && !m_sendBuffer.isEmpty()) {
-            m_port->write((m_sendBuffer.front() + "\n").toUtf8());
-            m_sendBuffer.pop_front();
-            --numPrompts;
-        }
-
-        // display the new data
-        m_texteditStatus->moveCursor(QTextCursor::End);
-        m_texteditStatus->insertPlainText(newData);
-    }
-}
-
-void ProgramGuiWindow::onPortChanged() {
+void ProgramGuiWindow::run() {
+    // close the serial port, if one is currently open
     if (m_port) {
         m_port->close();
         delete m_port;
+        m_port = NULL;
     }
 
     // create the serial port
     PortSettings settings = {BAUD9600, DATA_8, PAR_NONE, STOP_1, FLOW_OFF, 10};
     m_port = new QextSerialPort(m_comboPort->currentText(), settings, QextSerialPort::EventDriven);
+
     QObject::connect(m_port, SIGNAL(readyRead()), SLOT(onNewSerialData()));
     m_port->open(QIODevice::ReadWrite);
+
+    // switch to the status tab
+    m_tabs->setCurrentIndex(m_tabs->indexOf(m_texteditStatus));
+
+    // split the text into a series of lines
+    m_sendBuffer = m_texteditProgram->toPlainText().split('\n');
+
+    // wait for the arduino to prompt us before sending the first line.
+
+    // // send the first line (note that we can't safely send the entire program
+    // // because the arduino has a very small receive buffer).
+    // m_port->write((m_sendBuffer.front() + "\n").toUtf8());
+    // m_sendBuffer.pop_front();
 }
 
 
-void ProgramGuiWindow::onLockStateChanged(int state) {
-    m_buttonRun->setEnabled(state == Qt::Unchecked);
-}
