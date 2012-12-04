@@ -28,11 +28,11 @@
           <h2>Table of Contents</h2>
           <ul>
               <li><a href="#intro">Introduction</a></li>
-              <li>Controls</li>
-              <li>Language Syntax</li>
+              <li><a href="#controls">Controls</a></li>
+              <li><a href="#language">Language Reference</a></li>
           </ul>
 
-          <h2 id="intro">Introduction</h2>
+<h2 id="intro">Introduction</h2>
 
 <p>ArduinoPulseGenerator is a simple program for generating pulse sequences (with pulse widths on
 the order of milliseconds) using an Arduino.  There is an associate GUI that
@@ -40,13 +40,43 @@ runs on the local computer, or you can simply connect to the Arduino with a
 serial console (9600 baud) and send it commands.</p>
 
 <p>Pulse sequences are defined by simple programs.  For example, the following
-program will generate 15 ms pulses on channel 1 for 3 seconds:</p>
+program will generate 15 ms pulses on channel 2 at 10 Hz for 3 seconds:</p>
 
-<pre><code>change channel 1 to 15 ms pulses at 10 Hz
+<pre><code>set channel 2 to repeat 15 ms pulses at 10 Hz
 wait 3 s
-turn off channel 1
+turn off channel 2
 end program
 </code></pre>
+
+<p>Lines starting with a '#' are treated as comments, e.g.</p>
+
+<pre><code># this is a comment.
+</code></pre>
+
+<p>Repeat loops can be used to run the same commands multiple times, for example:</p>
+
+<pre><code># Generate three 20 Hz pulse trains each 500 ms long,
+# with 2 seconds between each pulse train.
+
+repeat 3 times:
+    set channel 1 to repeat 10 ms pulses at 20 Hz
+    wait 500 ms
+    turn off channel 1
+    wait 2 s
+end repeat
+
+end program
+</code></pre>
+
+
+
+
+<h2 id="controls">Controls</h2>
+
+
+
+
+<h2 id="#language">Language Reference</h2>
 
 </section>
 

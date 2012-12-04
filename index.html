@@ -22,7 +22,7 @@
           <h2>Use an Arduino to generate pulse sequences</h2>
         </header>
 
-        <section id="downloads" class="clearfix">
+        <section id=downloads" class="clearfix">
           <a href="https://github.com/kms15/ArduinoPulseGenerator/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
           <a href="https://github.com/kms15/ArduinoPulseGenerator/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
           <a href="https://github.com/kms15/ArduinoPulseGenerator" id="view-on-github" class="button"><span>View on GitHub</span></a>
@@ -33,10 +33,12 @@
         <section id="main_content">
           <h1>ArduinoPulseGenerator</h1>
 
-<p>This is a simple program for generating pulse sequences (with pulse widths on
-the order of milliseconds) using an Arduino.  There is an associate GUI that
-runs on the local computer, or you can simply connect to the Arduino with a
-serial console (9600 baud) and send it commands.</p>
+<p>ArduinoPulseGenerator is a simple program for generating pulse sequences
+(with pulse widths on the order of milliseconds) using an Arduino.  There is an
+associate GUI that runs on the local computer, or you can simply connect to the
+Arduino with a serial console (9600 baud) and send it commands.  This code has
+been tested on the ArduinoMega 2560 and Arduino Due; it may work on other
+Arduino boards but this has not been tested.</p>
 
 <p>This is a quick hack for some electrophysiology work being done in our lab, but
 if you need specific features please request them by opening a new issue on
@@ -44,14 +46,9 @@ github.</p>
 
 <h1>Building</h1>
 
-<p>The arduino firmware can be built by opening
-PulseGeneratorFirmware/PulseGenerator.pde in the Arduino environment.
-Alternatively, the included firmware/Makefile will build and upload (using
-"make upload") the firmware for the arduino on Ubuntu 12.10; other systems
-may need some modifications to the makefile.</p>
-
-<p>The GUI can be built by running "qmake" and "make" in the project directory
-(after installing Qt).</p>
+<p>Instructions on building the firmware and user interface can be found in the
+<a href="https://github.com/kms15/ArduinoPulseGenerator/blob/master/README.rst">README.rst</a>
+included with the source code.</p>
 
 <h1>Usage</h1>
 
@@ -64,8 +61,8 @@ turn off channel 1
 end program
 </code></pre>
 
-<p>Channels 1, 2, 3, and 4 are mapped to arduino pins 2, 3, 4 and 5
-respectively.</p>
+<p>Channels 1 through 8 are mapped to Arduino pins 2, 3, 4, 5, 8, 9, 10, and
+11 respectively.</p>
 
 For more information, see the <a href="manual">ArduinoPulseGenerator manual</a>.
 
