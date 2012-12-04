@@ -102,6 +102,10 @@ header h2 {
   margin-bottom: 40px;
 }
 
+b {
+    font-weight: bold;
+}
+
 a.button {
   -moz-border-radius: 30px;
   -webkit-border-radius: 30px;                     
@@ -252,15 +256,15 @@ h2 {
 } 
 
 h3 {
-  color: #d5000d;
+  color: #303030;
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 8px;
 } 
  
 h4 {
-  font-size: 16px;
   color: #303030;
+  font-size: 16px;
   font-weight: bold;
 } 
 

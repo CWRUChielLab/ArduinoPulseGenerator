@@ -48,9 +48,16 @@ turn off channel 2
 end program
 </code></pre>
 
+<p>To see the pulse sequence the program will generate you can use the
+<b>Simulate</b> button.  Once you are happy with the pulse sequence you've created,
+the <b>Run on Device</b> button will run the program on the Arduino, generating the
+pulses on its digital outputs.  Channels 1 through 8 are mapped to Arduino pins
+2, 3, 4, 5, 8, 9, 10, and
+11 respectively.</p>
+
 <p>Lines starting with a '#' are treated as comments, e.g.</p>
 
-<pre><code># this is a comment.
+<pre><code># This is a comment.
 </code></pre>
 
 <p>Repeat loops can be used to run the same commands multiple times, for example:</p>
@@ -73,10 +80,179 @@ end program
 
 <h2 id="controls">Controls</h2>
 
+<h3>Help</h3>
+
+<p>The <b>Help</b> button can be used to open this manual in a web browser.</p>
+
+<h3>New</h3>
+
+<p>The <b>New</b> button will open a new window with a sample pulse generator program.</p>
+
+<h3>Open</h3>
+
+<p>The <b>Open</b> button allows you to open text files containing pulse
+generator programs.  By default it expects the file names to end in .psq, but
+you can choose the "All Files" filter if you've saved your program with a
+different extension.</p>
+
+<h3>Save</h3>
+
+<p>The <b>Save</b> button allows you to save the current program as a text file
+that you can open later with the <b>Open</b> button.</p>
+
+<h3>Simulate</h3>
+
+<p>The <b>Simulate</b> button allows you to generate a graph of the pulse
+sequence that the current program will generate.  This is useful for debugging
+your programs before you generate real pulses (which might damage your
+experimental preparation).</p>
+
+<h3>Port</h3>
+
+<p>The <b>Port</b> combo box allows you to specify which port your Arduino is
+connect to, or if you have multiple Arduinos attached to the computer, which
+Arduino will be used by the <b>Run on Device</b> button in this window.</p>
+
+<h3>Lock</h3>
+
+<p>The <b>Lock</b> checkbox allows you to lock the <b>Run on Device</b> button
+so that it can not be pressed until the lock checkbox is clicked again.  This
+is a safety feature requested by one of our users, because if the stimulation
+being used is dangerous to the experimenter or the experimental preparation,
+pressing the <b>Run on Device</b> button when you meant to press
+<b>Simulate</b> could be a disaster.
+
+<h3>Run on Device</h3>
+
+<p>The <b>Run on Device</b> button will upload the program to the Arduino
+which will then run the program, generating the pulse sequence.  Note that
+the correct port for the Arduino must be selected in the <b>Port</b> combo
+box for this command to work.</p>
 
 
+<h2 id="language">Language Reference</h2>
 
-<h2 id="#language">Language Reference</h2>
+<h3>Values</h3>
+
+<p>The following types of values are used by commands:</p>
+
+<h4>Number</h4>
+<p>Numbers are used for things like the number of times to repeat a loop.  Numbers
+should be specified as non-negative decimal integers between 0 and 4294967295,
+inclusive, for example "5", "23", "0", or "4192".</p>
+
+<h4>Channel</h4>
+<p>A channel is a number between 1 and 8, inclusive, for example "5", "1", or "3".</p>
+
+<h4>Float</h4>
+<p>A float is a non-negative real number, specified in decimal format, for
+example "2.13", "0", "123456.78", or "0.0023".</p>
+
+<h4>Time unit</h4>
+<p>A time unit can be "s" (seconds), "ms" (milliseconds), or "us" or "&mu;s" (both
+synonyms for microseconds).</p>
+
+<h4>Interval</h4>
+<p>An interval is a duration of time, specified as a float followed by a time
+unit.  A few examples of intervals are "53 s", "102.25 ms", and "9345 us".</p>
+
+<h4>Frequency unit</h4>
+<p>A time unit can be "Hz" (Hertz, i.e. per second), "kHz" (kilohertz).</p>
+
+<h4>Frequency</h4>
+<p>An frequency is specified as a float followed by a frequency unit.  A few
+examples off frequencies are "30 Hz", "0.125 Hz", and "2.048 kHz".</p>
+
+<h3>Commands</h3>
+
+<p>The following commands are supported by ArduinoPulseGenerator:</p>
+
+<h4># Comment</h4>
+
+<p>Comments are notes left by the programmer which have no effect on the execution
+of the program.  Comments are indicated with a '#' mark, and continue to the
+end of the current line.  Examples:</p>
+
+<pre><code># This is a comment.
+    # This is an indented comment.
+turn off channel 1 # Comments can be used on the same line as a command.
+</code></pre>
+
+<h4>set channel [channel] to [Interval] pulses at [frequency]</h4>
+
+<p>Sets the given channel to start outputting pulses of the given duration at
+the given frequency.  The channel will continue to output these pulses until
+the program ends or another command changes the settings for this channel.
+Examples:</p>
+
+<pre><code>set channel 8 to 10 ms pulses at 20 Hz
+set channel 1 to 1 s pulses at 0.01 Hz
+</code></pre>
+
+<h4>set channel [channel] to [Interval] pulses every [Interval]</h4>
+
+<p>Sets the given channel to start outputting pulses of the given duration at
+with the given interval between repeats.  The channel will continue to output
+these pulses until the program ends or another command changes the settings for
+this channel.
+Examples:</p>
+
+<pre><code>set channel 6 to 1.2 s pulses every 2 s
+set channel 2 to 15 ms pulses every 100 ms
+</code></pre>
+
+<h4>turn off channel [channel]</h4>
+
+<p>Sets the given channel to low/off, stopping an pulses that it might have
+been generating.
+Example:</p>
+
+<pre><code>turn off channel 3</code></pre>
+
+<h4>turn on channel [channel]</h4>
+
+<p>Sets the given channel to high/on, stopping an pulses that it might have
+been generating.
+Example:</p>
+
+<pre><code>turn on channel 2</code></pre>
+
+<h4>wait [Interval]</h4>
+
+<p>Pauses the execution of the program until the given interval of time has
+passed.
+Examples:</p>
+
+<pre><code>wait 12.1 s
+wait 250 ms
+wait 1200 us
+</code></pre>
+
+<h4>repeat [Number] times:</h4>
+
+<p>Repeats all of the commands between this command and the matching
+end repeat.  Repeats can be nested.
+Example:</p>
+
+<pre><code>repeat 10 times:
+</code></pre>
+
+<h4>end repeat</h4>
+
+<p>The "end program" command marks the end of a block of statements to repeat.
+Each repeat statement should have an end repeat that follows it.
+Example:</p>
+
+<pre><code>end repeat</code></pre>
+
+
+<h4>end program</h4>
+
+<p>The "end program" command marks the end of the program.  Each program should
+have exactly one "end program" command as the last line of the program.
+Example:</p>
+
+<pre><code>end program</code></pre>
 
 </section>
 
