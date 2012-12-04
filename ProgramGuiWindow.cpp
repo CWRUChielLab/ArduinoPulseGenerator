@@ -33,12 +33,16 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     m_texteditProgram = new QTextEdit();
     //m_texteditProgram->setText(
     m_texteditProgram->insertPlainText(
+            "# This is an example of a program that generates three pulse\n"
+            "# trains of 10 Hz pulses.\n"
+            "\n"
             "repeat 3 times:\n"
             "\tset channel 1 to 15 ms pulses at 10 Hz\n"
             "\twait 1.5 s\n"
             "\tturn off channel 1\n"
             "\twait 500 ms\n"
             "end repeat\n"
+            "\n"
             "end program\n"
             );
     m_texteditProgram->setLineWrapMode(QTextEdit::NoWrap);
@@ -396,12 +400,11 @@ void ProgramGuiWindow::run() {
     // split the text into a series of lines
     m_sendBuffer = m_texteditProgram->toPlainText().split('\n');
 
-    // wait for the arduino to prompt us before sending the first line.
+    // Add a dummy line at the beginning to work around a race condition
+    // when the Arduino resets.
+    m_sendBuffer.push_front("# ArduinoPulseGeneratorGui v1.0");
 
-    // // send the first line (note that we can't safely send the entire program
-    // // because the arduino has a very small receive buffer).
-    // m_port->write((m_sendBuffer.front() + "\n").toUtf8());
-    // m_sendBuffer.pop_front();
+    // wait for the arduino to prompt us before sending the first line.
 }
 
 
