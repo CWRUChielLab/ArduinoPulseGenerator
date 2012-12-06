@@ -36,7 +36,7 @@
 <h2 id="intro">Introduction</h2>
 
 <p>ArduinoPulseGenerator is a simple program for generating pulse sequences (with pulse widths on
-the order of milliseconds) using an Arduino.  There is an associate GUI that
+the order of milliseconds) using an Arduino.  There is an associated GUI that
 runs on the local computer, or you can simply connect to the Arduino with a
 serial console (9600 baud) and send it commands.</p>
 
@@ -103,7 +103,7 @@ that you can open later with the <b>Open</b> button.</p>
 
 <h3>Simulate</h3>
 
-<p>The <b>Simulate</b> button allows you to generate a graph of the pulse
+<p>The <b>Simulate</b> button allows you to draw a graph of the pulse
 sequence that the current program will generate.  This is useful for debugging
 your programs before you generate real pulses (which might damage your
 experimental preparation).</p>
@@ -111,7 +111,7 @@ experimental preparation).</p>
 <h3>Port</h3>
 
 <p>The <b>Port</b> combo box allows you to specify which port your Arduino is
-connect to, or if you have multiple Arduinos attached to the computer, which
+connected to, or if you have multiple Arduinos attached to the computer, which
 Arduino will be used by the <b>Run on Device</b> button in this window.</p>
 
 <h3>Lock</h3>
@@ -130,6 +130,15 @@ which will then run the program, generating the pulse sequence.  Note that
 the correct port for the Arduino must be selected in the <b>Port</b> combo
 box for this command to work.</p>
 
+<p>While the program is running, the <b>Run on Device</b> button will
+be replaced by the <b>Interrupt Program</b> button (see below).
+
+<h3>Interrupt Program</h3>
+
+<p>The <b>Interrupt Program</b> button replaces the <b>Run on Device</b> button
+while the Arduino is running a pulse sequence program.  Pressing this button
+will reset the Arduino, halting any currently running program and turning
+off all of the channels.</p>
 
 <h2 id="language">Language Reference</h2>
 
@@ -137,10 +146,11 @@ box for this command to work.</p>
 
 <p>The following types of values are used by commands:</p>
 
+<div class="definitions">
 <h4>Number</h4>
 <p>Numbers are used for things like the number of times to repeat a loop.  Numbers
-should be specified as non-negative decimal integers between 0 and 4294967295,
-inclusive, for example "5", "23", "0", or "4192".</p>
+should be specified as non-negative decimal integers between 0 and 4294967295
+(i.e. 2<sup>32</sup> - 1), inclusive, for example "5", "23", "0", or "4192".</p>
 
 <h4>Channel</h4>
 <p>A channel is a number between 1 and 8, inclusive, for example "5", "1", or "3".</p>
@@ -151,23 +161,27 @@ example "2.13", "0", "123456.78", or "0.0023".</p>
 
 <h4>Time unit</h4>
 <p>A time unit can be "s" (seconds), "ms" (milliseconds), or "us" or "&mu;s" (both
-synonyms for microseconds).</p>
+synonyms for microseconds).  Note that the accuracy of timing in this program is
+about &plusmn;200 microseconds on the Arduino Mega 2560 and about &plusmn;30
+microseconds on the Arduino Due.</p>
 
 <h4>Interval</h4>
 <p>An interval is a duration of time, specified as a float followed by a time
 unit.  A few examples of intervals are "53 s", "102.25 ms", and "9345 us".</p>
 
 <h4>Frequency unit</h4>
-<p>A time unit can be "Hz" (Hertz, i.e. per second), "kHz" (kilohertz).</p>
+<p>A frequency unit can be "Hz" (Hertz, i.e. per second), "kHz" (kilohertz).</p>
 
 <h4>Frequency</h4>
 <p>An frequency is specified as a float followed by a frequency unit.  A few
 examples off frequencies are "30 Hz", "0.125 Hz", and "2.048 kHz".</p>
+</div>
 
 <h3>Commands</h3>
 
 <p>The following commands are supported by ArduinoPulseGenerator:</p>
 
+<div class="definitions">
 <h4># Comment</h4>
 
 <p>Comments are notes left by the programmer which have no effect on the execution
@@ -192,7 +206,7 @@ set channel 1 to 1 s pulses at 0.01 Hz
 
 <h4>set channel [channel] to [Interval] pulses every [Interval]</h4>
 
-<p>Sets the given channel to start outputting pulses of the given duration at
+<p>Sets the given channel to start outputting pulses of the given duration
 with the given interval between repeats.  The channel will continue to output
 these pulses until the program ends or another command changes the settings for
 this channel.
@@ -204,7 +218,7 @@ set channel 2 to 15 ms pulses every 100 ms
 
 <h4>turn off channel [channel]</h4>
 
-<p>Sets the given channel to low/off, stopping an pulses that it might have
+<p>Sets the given channel to low/off, stopping any pulses that it might have
 been generating.
 Example:</p>
 
@@ -212,7 +226,7 @@ Example:</p>
 
 <h4>turn on channel [channel]</h4>
 
-<p>Sets the given channel to high/on, stopping an pulses that it might have
+<p>Sets the given channel to high/on, stopping any pulses that it might have
 been generating.
 Example:</p>
 
@@ -220,8 +234,9 @@ Example:</p>
 
 <h4>wait [Interval]</h4>
 
-<p>Pauses the execution of the program until the given interval of time has
-passed.
+<p>Waits until the given interval of time has passed before executing
+subsequent commands.  During this time the channels will continue to
+generate pulses with the frequency and duration they were set to.
 Examples:</p>
 
 <pre><code>wait 12.1 s
@@ -240,7 +255,7 @@ Example:</p>
 
 <h4>end repeat</h4>
 
-<p>The "end program" command marks the end of a block of statements to repeat.
+<p>The "end repeat" command marks the end of a block of statements to repeat.
 Each repeat statement should have an end repeat that follows it.
 Example:</p>
 
@@ -254,6 +269,7 @@ have exactly one "end program" command as the last line of the program.
 Example:</p>
 
 <pre><code>end program</code></pre>
+</div>
 
 </section>
 
