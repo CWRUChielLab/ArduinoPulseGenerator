@@ -78,10 +78,21 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     Q_FOREACH (QextPortInfo info, QextSerialEnumerator::getPorts())
         m_comboPort->addItem(info.portName);
     m_comboPort->setEditable(true);
+#ifdef Q_WS_MAC
+    // The Arduino usually isn't the last serial port on the mac, but it
+    // seems to be given the name cu.usbmodemXXXX where the Xs are some
+    // hexidecimal number.
+    for (int i = m_comboPort->count() - 1; i >= 0; --i) {
+        if (m_comboPort->itemText(i).contains("usbmodem")) {
+            m_comboPort->setCurrentIndex(i);
+        }
+    }
+#else
     // the last port is much more likely to be the Arduino (since the first
     // ports are usually built-in serial ports), so we select the last by
     // default.
     m_comboPort->setCurrentIndex(m_comboPort->count() - 1);
+#endif
 
     // and the buttons
     m_buttonHelp = new QPushButton("Help");
@@ -396,7 +407,7 @@ void ProgramGuiWindow::run() {
         // when the Arduino resets.
         m_sendBuffer.push_back("# ArduinoPulseGeneratorGui v1.0");
 
-        for (int i = 1; i <= numChannels; ++i) {
+        for (int i = 1; i <= (int)numChannels; ++i) {
             m_sendBuffer.push_back("turn off channel " + QString::number(i));
         }
         m_sendBuffer.push_back("end program");
