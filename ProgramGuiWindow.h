@@ -14,6 +14,7 @@
 #include <qwt_plot_curve.h>
 
 class QextSerialPort;
+class QextSerialEnumerator;
 
 // A window with a basic text area for entering and editing a program.
 class ProgramGuiWindow : public QWidget
@@ -44,6 +45,7 @@ class ProgramGuiWindow : public QWidget
 
     // the serial port
     QextSerialPort* m_port;
+    QextSerialEnumerator* m_portEnumerator;
 
     // the tab container
     QTabWidget* m_tabs;
@@ -60,8 +62,9 @@ private Q_SLOTS:
     void run();
 
     void onNewSerialData();
-    void onPortChanged();
     void onLockStateChanged(int state);
+
+    void repopulatePortComboBox();
 
 public:
     ProgramGuiWindow(QWidget* parent = NULL);

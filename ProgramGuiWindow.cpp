@@ -75,9 +75,8 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     // the port selection combo box...
     m_labelPort = new QLabel("Port");
     m_comboPort = new QComboBox();
-    Q_FOREACH (QextPortInfo info, QextSerialEnumerator::getPorts())
-        m_comboPort->addItem(info.portName);
     m_comboPort->setEditable(true);
+    repopulatePortComboBox();
 #ifdef Q_WS_MAC
     // The Arduino usually isn't the last serial port on the mac, but it
     // seems to be given the name cu.usbmodemXXXX where the Xs are some
@@ -132,6 +131,11 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     mainLayout->addLayout(buttonLayout);
     setLayout(mainLayout);
 
+    // set up the serial port support
+    m_port = NULL;
+    m_portEnumerator = new QextSerialEnumerator(this);
+    m_portEnumerator->setUpNotifications();
+
     // attach signals as needed
     QObject::connect(m_buttonHelp, SIGNAL(clicked()), this, SLOT(help()));
     QObject::connect(m_buttonNew, SIGNAL(clicked()), this, SLOT(newDocument()));
@@ -139,13 +143,13 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     QObject::connect(m_buttonSave, SIGNAL(clicked()), this, SLOT(save()));
     QObject::connect(m_buttonSimulate, SIGNAL(clicked()), this, SLOT(simulate()));
     QObject::connect(m_buttonRun, SIGNAL(clicked()), this, SLOT(run()));
-    QObject::connect(m_comboPort, SIGNAL(editTextChanged(QString)), SLOT(onPortChanged()));
     QObject::connect(m_checkboxLock, SIGNAL(stateChanged(int)), SLOT(onLockStateChanged(int)));
+    QObject::connect(m_portEnumerator, SIGNAL(deviceDiscovered(QextPortInfo)),
+            SLOT(repopulatePortComboBox()));
+    QObject::connect(m_portEnumerator, SIGNAL(deviceRemoved(QextPortInfo)),
+            SLOT(repopulatePortComboBox()));
 
     setWindowTitle("Arduino Pulse Generator - new Program");
-
-    m_port = NULL;
-    onPortChanged();
 };
 
 
@@ -182,10 +186,6 @@ void ProgramGuiWindow::onNewSerialData() {
         m_texteditStatus->insertPlainText(newData);
 
     }
-}
-
-
-void ProgramGuiWindow::onPortChanged() {
 }
 
 
@@ -437,3 +437,15 @@ void ProgramGuiWindow::run() {
     // wait for the arduino to prompt us before sending the first line.
 }
 
+
+void ProgramGuiWindow::repopulatePortComboBox()
+{
+    QString currentPortName = m_comboPort->currentText();
+
+    m_comboPort->clear();
+    Q_FOREACH (QextPortInfo info, QextSerialEnumerator::getPorts()) {
+        m_comboPort->addItem(info.portName);
+    }
+
+    m_comboPort->setCurrentIndex(m_comboPort->findText(currentPortName));
+}
