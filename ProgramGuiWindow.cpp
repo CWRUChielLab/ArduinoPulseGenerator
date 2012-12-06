@@ -10,6 +10,8 @@
 #include "pulseStateMachine.h"
 #include "ProgramGuiWindow.h"
 
+const QString runButtonText = "Run on Device";
+const QString interruptButtonText = "Interrupt Program";
 
 // the default Qwt minimum plot size is far too large, so we need to
 // subclass the plot.
@@ -87,7 +89,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     m_buttonOpen = new QPushButton("Open");
     m_buttonSave = new QPushButton("Save");
     m_buttonSimulate = new QPushButton("Simulate");
-    m_buttonRun = new QPushButton("Run on Device");
+    m_buttonRun = new QPushButton(runButtonText);
 
     m_checkboxLock = new QCheckBox("Lock");
 
@@ -153,6 +155,7 @@ void ProgramGuiWindow::onNewSerialData() {
             m_port->close();
             delete m_port;
             m_port = NULL;
+            m_buttonRun->setText(runButtonText);
         } else {
             // queue up one additional line per prompt
             int numPrompts = newData.count(':');
@@ -356,8 +359,8 @@ void ProgramGuiWindow::simulate() {
     m_plot->setAxisScale(QwtPlot::xBottom,  timeStart, timeEnd);
     for (unsigned int i = 0; i < numChannels; ++i) {
         m_points[i].prepend(QPointF(timeStart, low - i - 1));
-        m_points[i].append(QPointF(timeEnd,
-                    (channels[i].on() ? high : low) - i - 1));
+        m_points[i].append(QPointF(time * us, low - i - 1));
+        m_points[i].append(QPointF(timeEnd, low - i - 1));
     }
 
 
@@ -385,6 +388,32 @@ void ProgramGuiWindow::run() {
         m_port->close();
         delete m_port;
         m_port = NULL;
+
+        // discard any remaining commands
+        m_sendBuffer.clear();
+
+        // Add a dummy line at the beginning to work around a race condition
+        // when the Arduino resets.
+        m_sendBuffer.push_back("# ArduinoPulseGeneratorGui v1.0");
+
+        for (int i = 1; i <= numChannels; ++i) {
+            m_sendBuffer.push_back("turn off channel " + QString::number(i));
+        }
+        m_sendBuffer.push_back("end program");
+
+    } else {
+        m_buttonRun->setText(interruptButtonText);
+
+        // switch to the status tab
+        m_tabs->setCurrentIndex(m_tabs->indexOf(m_texteditStatus));
+
+        // split the text into a series of lines
+        m_sendBuffer = m_texteditProgram->toPlainText().split('\n');
+
+        // Add a dummy line at the beginning to work around a race condition
+        // when the Arduino resets.
+        m_sendBuffer.push_front("# ArduinoPulseGeneratorGui v1.0");
+
     }
 
     // create the serial port
@@ -394,17 +423,6 @@ void ProgramGuiWindow::run() {
     QObject::connect(m_port, SIGNAL(readyRead()), SLOT(onNewSerialData()));
     m_port->open(QIODevice::ReadWrite);
 
-    // switch to the status tab
-    m_tabs->setCurrentIndex(m_tabs->indexOf(m_texteditStatus));
-
-    // split the text into a series of lines
-    m_sendBuffer = m_texteditProgram->toPlainText().split('\n');
-
-    // Add a dummy line at the beginning to work around a race condition
-    // when the Arduino resets.
-    m_sendBuffer.push_front("# ArduinoPulseGeneratorGui v1.0");
-
     // wait for the arduino to prompt us before sending the first line.
 }
-
 

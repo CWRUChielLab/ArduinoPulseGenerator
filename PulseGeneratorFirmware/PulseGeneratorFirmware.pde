@@ -97,6 +97,11 @@ void loop() {
                         prevTime = newTime;
                     }
 
+                    // turn off all of the pins
+                    for (unsigned int i = 0; i < numChannels; ++i) {
+                        digitalWrite(channelPins[i], LOW);
+                    }
+
                     lineNum = 1;
                     numCommands = 0;
                     // N.B.: This message must be kept in sync with
