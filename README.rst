@@ -1,16 +1,13 @@
 ArduinoPulseGenerator
 =====================
 
-This is a simple program for generating pulse sequences (with pulse widths on
-the order of milliseconds) using an Arduino.  There is an associate GUI that
-runs on the local computer, or you can simply connect to the Arduino with a
-serial console (9600 baud) and send it commands.  This code has been tested
-on the ArduinoMega 2560 and Arduino Due; it may work on other Arduino boards
-but this has not been tested.
-
-This is a quick hack for some electrophysiology work being done in our lab, but
-if you need specific features please request them by opening a new issue on
-github.
+ArduinoPulseGenerator is a simple program for generating pulse sequences (with
+pulse widths on the order of seconds to milliseconds) using an Arduino. There
+is an associated GUI that runs on the local computer, or you can simply connect
+to the Arduino with a serial console (9600 baud) and send it commands. This
+code has been tested on the ArduinoMega 2560 (timing accuracy ~ ±200 μs) and
+Arduino Due (timing accuracy ~ ±35 μs); it may work on other Arduino boards but
+this has not been tested.
 
 For information on using this software, please see the `ArduinoPulseGenerator
 website <http://kms15.github.com/ArduinoPulseGenerator/>`_.
@@ -62,5 +59,7 @@ License
 
 ArduinoPulseGenerator is released under a GPLv3 License (see the file
 "COPYING" for details, or the FSF site for a `a discussion of the GPL
-license <https://www.gnu.org/licenses/quick-guide-gplv3>`_).
+license <https://www.gnu.org/licenses/quick-guide-gplv3>`_), and can
+be redistributed and/or modified under this or (at your option) any
+later version of this license.
 
