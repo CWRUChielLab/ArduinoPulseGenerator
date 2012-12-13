@@ -131,8 +131,10 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     m_labelPulseWidth = new QLabel("Pulse Width");
     m_sliderPulseWidth = new QSlider(Qt::Horizontal);
     m_sliderPulseWidth->setRange(0, 1000);
+    m_sliderPulseWidth->setValue(6);
     m_spinPulseWidth = new QDoubleSpinBox();
     m_spinPulseWidth->setRange(0, 99999.99);
+    m_spinPulseWidth->setValue(m_sliderPulseWidth->value());
     m_comboPulseWidth = new QComboBox();
     m_comboPulseWidth->addItem("s");
     m_comboPulseWidth->addItem("ms");
@@ -145,8 +147,10 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     m_labelPulseFrequency = new QLabel("Pulse Frequency");
     m_sliderPulseFrequency = new QSlider(Qt::Horizontal);
     m_sliderPulseFrequency->setRange(0, 100);
+    m_sliderPulseFrequency->setValue(10);
     m_spinPulseFrequency = new QDoubleSpinBox();
     m_spinPulseFrequency->setRange(0, 99999.99);
+    m_spinPulseFrequency->setValue(m_sliderPulseFrequency->value());
     m_comboPulseFrequency = new QComboBox();
     m_comboPulseFrequency->addItem("Hz");
     m_comboPulseFrequency->addItem("kHz");
@@ -154,8 +158,11 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
 
     m_labelTrainDuration = new QLabel("Train Duration");
     m_sliderTrainDuration = new QSlider(Qt::Horizontal);
+    m_sliderTrainDuration->setRange(0, 60);
+    m_sliderTrainDuration->setValue(3);
     m_spinTrainDuration = new QDoubleSpinBox();
     m_spinTrainDuration->setRange(0, 99999.99);
+    m_spinTrainDuration->setValue(m_sliderTrainDuration->value());
     m_comboTrainDuration = new QComboBox();
     m_comboTrainDuration->addItem("s");
     m_comboTrainDuration->addItem("ms");
@@ -165,19 +172,25 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     m_labelNumTrains = new QLabel("Number of Trains");
     m_sliderNumTrains = new QSlider(Qt::Horizontal);
     m_sliderNumTrains->setRange(1, 20);
+    m_sliderNumTrains->setValue(1);
     m_spinNumTrains = new QSpinBox();
     m_spinNumTrains->setRange(1, 99999);
+    m_spinNumTrains->setValue(m_sliderNumTrains->value());
 
     m_labelTrainDelay = new QLabel("Delay between Trains");
     m_sliderTrainDelay = new QSlider(Qt::Horizontal);
     m_sliderTrainDelay->setRange(0, 300);
+    m_sliderTrainDelay->setValue(20);
     m_spinTrainDelay = new QDoubleSpinBox();
     m_spinTrainDelay->setRange(0, 99999.99);
+    m_spinTrainDelay->setValue(m_sliderTrainDelay->value());
     m_comboTrainDelay = new QComboBox();
     m_comboTrainDelay->addItem("s");
     m_comboTrainDelay->addItem("ms");
     m_comboTrainDelay->addItem("\xB5s");
     m_comboTrainDelay->setCurrentIndex(0);
+
+    updateWizardDisabledControls();
 
     m_labelWizardProgram = new QLabel("Equivalent Program:");
     m_texteditWizardProgram = new QTextEdit();
