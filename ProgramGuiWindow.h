@@ -52,7 +52,7 @@ class ProgramGuiWindow : public QWidget
     QTabWidget* m_tabsOutput;
     QTabWidget* m_tabsProgram;
 
-    // the wizard controls
+    // the wizard/traditional controls
     QWidget* m_widgetWizard;
 
     QLabel* m_labelChannel;
