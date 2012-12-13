@@ -146,7 +146,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     m_sliderPulseFrequency = new QSlider(Qt::Horizontal);
     m_sliderPulseFrequency->setRange(0, 100);
     m_spinPulseFrequency = new QDoubleSpinBox();
-    m_sliderPulseFrequency->setRange(0, 99999.99);
+    m_spinPulseFrequency->setRange(0, 99999.99);
     m_comboPulseFrequency = new QComboBox();
     m_comboPulseFrequency->addItem("Hz");
     m_comboPulseFrequency->addItem("kHz");
@@ -164,9 +164,9 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
 
     m_labelNumTrains = new QLabel("Number of Trains");
     m_sliderNumTrains = new QSlider(Qt::Horizontal);
-    m_sliderNumTrains->setRange(0, 20);
+    m_sliderNumTrains->setRange(1, 20);
     m_spinNumTrains = new QSpinBox();
-    m_spinNumTrains->setRange(0, 99999);
+    m_spinNumTrains->setRange(1, 99999);
 
     m_labelTrainDelay = new QLabel("Delay between Trains");
     m_sliderTrainDelay = new QSlider(Qt::Horizontal);
@@ -256,7 +256,24 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     m_portEnumerator = new QextSerialEnumerator(this);
     m_portEnumerator->setUpNotifications();
 
-    // attach signals as needed
+    // link controls together
+    QObject::connect(m_sliderChannel, SIGNAL(valueChanged(int)), m_spinChannel, SLOT(setValue(int)));
+    QObject::connect(m_spinChannel, SIGNAL(valueChanged(int)), m_sliderChannel, SLOT(setValue(int)));
+    QObject::connect(m_sliderNumTrains, SIGNAL(valueChanged(int)), m_spinNumTrains, SLOT(setValue(int)));
+    QObject::connect(m_spinNumTrains, SIGNAL(valueChanged(int)), m_sliderNumTrains, SLOT(setValue(int)));
+    QObject::connect(m_sliderPulseWidth, SIGNAL(valueChanged(int)), this, SLOT(changePulseWidth(int)));
+    QObject::connect(m_spinPulseWidth, SIGNAL(valueChanged(double)), this, SLOT(changePulseWidth(double)));
+    QObject::connect(m_sliderPulseFrequency, SIGNAL(valueChanged(int)), this, SLOT(changePulseFrequency(int)));
+    QObject::connect(m_spinPulseFrequency, SIGNAL(valueChanged(double)), this, SLOT(changePulseFrequency(double)));
+    QObject::connect(m_sliderTrainDuration, SIGNAL(valueChanged(int)), this, SLOT(changeTrainDuration(int)));
+    QObject::connect(m_spinTrainDuration, SIGNAL(valueChanged(double)), this, SLOT(changeTrainDuration(double)));
+    QObject::connect(m_sliderTrainDelay, SIGNAL(valueChanged(int)), this, SLOT(changeTrainDelay(int)));
+    QObject::connect(m_spinTrainDelay, SIGNAL(valueChanged(double)), this, SLOT(changeTrainDelay(double)));
+    QObject::connect(m_checkboxPulseTrain, SIGNAL(stateChanged(int)), SLOT(updateWizardDisabledControls()));
+    QObject::connect(m_spinNumTrains, SIGNAL(valueChanged(int)), SLOT(updateWizardDisabledControls()));
+    QObject::connect(m_sliderNumTrains, SIGNAL(valueChanged(int)), SLOT(updateWizardDisabledControls()));
+
+    // attach other signals as needed
     QObject::connect(m_buttonHelp, SIGNAL(clicked()), this, SLOT(help()));
     QObject::connect(m_buttonNew, SIGNAL(clicked()), this, SLOT(newDocument()));
     QObject::connect(m_buttonOpen, SIGNAL(clicked()), this, SLOT(open()));
@@ -271,6 +288,54 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
 
     setWindowTitle("Arduino Pulse Generator - new Program");
 };
+
+
+void ProgramGuiWindow::changePulseWidth(int newVal) {
+    m_spinPulseWidth->setValue(newVal);
+}
+
+
+void ProgramGuiWindow::changePulseWidth(double newVal) {
+    m_sliderPulseWidth->blockSignals(true);
+    m_sliderPulseWidth->setValue((int)newVal);
+    m_sliderPulseWidth->blockSignals(false);
+}
+
+
+void ProgramGuiWindow::changePulseFrequency(int newVal) {
+    m_spinPulseFrequency->setValue(newVal);
+}
+
+
+void ProgramGuiWindow::changePulseFrequency(double newVal) {
+    m_sliderPulseFrequency->blockSignals(true);
+    m_sliderPulseFrequency->setValue((int)newVal);
+    m_sliderPulseFrequency->blockSignals(false);
+}
+
+
+void ProgramGuiWindow::changeTrainDuration(int newVal) {
+    m_spinTrainDuration->setValue(newVal);
+}
+
+
+void ProgramGuiWindow::changeTrainDuration(double newVal) {
+    m_sliderTrainDuration->blockSignals(true);
+    m_sliderTrainDuration->setValue((int)newVal);
+    m_sliderTrainDuration->blockSignals(false);
+}
+
+
+void ProgramGuiWindow::changeTrainDelay(int newVal) {
+    m_spinTrainDelay->setValue(newVal);
+}
+
+
+void ProgramGuiWindow::changeTrainDelay(double newVal) {
+    m_sliderTrainDelay->blockSignals(true);
+    m_sliderTrainDelay->setValue((int)newVal);
+    m_sliderTrainDelay->blockSignals(false);
+}
 
 
 QSize ProgramGuiWindow::sizeHint() const {
@@ -510,6 +575,31 @@ void ProgramGuiWindow::simulate() {
 
 void ProgramGuiWindow::onLockStateChanged(int state) {
     m_buttonRun->setEnabled(state == Qt::Unchecked);
+}
+
+
+void ProgramGuiWindow::updateWizardDisabledControls() {
+    bool bEnableTrains = m_checkboxPulseTrain->isChecked();
+
+    m_labelPulseFrequency->setEnabled(bEnableTrains);
+    m_spinPulseFrequency->setEnabled(bEnableTrains);
+    m_sliderPulseFrequency->setEnabled(bEnableTrains);
+    m_comboPulseFrequency->setEnabled(bEnableTrains);
+
+    m_labelTrainDuration->setEnabled(bEnableTrains);
+    m_spinTrainDuration->setEnabled(bEnableTrains);
+    m_sliderTrainDuration->setEnabled(bEnableTrains);
+    m_comboTrainDuration->setEnabled(bEnableTrains);
+
+    m_labelNumTrains->setEnabled(bEnableTrains);
+    m_spinNumTrains->setEnabled(bEnableTrains);
+    m_sliderNumTrains->setEnabled(bEnableTrains);
+
+    bool bEnableDelay = (bEnableTrains && m_spinNumTrains->value() > 1);
+    m_labelTrainDelay->setEnabled(bEnableDelay);
+    m_spinTrainDelay->setEnabled(bEnableDelay);
+    m_sliderTrainDelay->setEnabled(bEnableDelay);
+    m_comboTrainDelay->setEnabled(bEnableDelay);
 }
 
 

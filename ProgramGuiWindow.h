@@ -100,8 +100,21 @@ private Q_SLOTS:
     void simulate();
     void run();
 
+    void changePulseWidth(int newVal);
+    void changePulseWidth(double newVal);
+
+    void changePulseFrequency(int newVal);
+    void changePulseFrequency(double newVal);
+
+    void changeTrainDuration(int newVal);
+    void changeTrainDuration(double newVal);
+
+    void changeTrainDelay(int newVal);
+    void changeTrainDelay(double newVal);
+
     void onNewSerialData();
     void onLockStateChanged(int state);
+    void updateWizardDisabledControls();
 
     void repopulatePortComboBox();
 
