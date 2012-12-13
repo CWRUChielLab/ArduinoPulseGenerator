@@ -29,6 +29,8 @@ class QwtShortPlot : public QwtPlot
 ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     QWidget(parent)
 {
+    const int tabStopWidth = 16;
+
     // create the controls
 
     // first the program editor
@@ -48,7 +50,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
             "end program\n"
             );
     m_texteditProgram->setLineWrapMode(QTextEdit::NoWrap);
-    m_texteditProgram->setTabStopWidth(16);
+    m_texteditProgram->setTabStopWidth(tabStopWidth);
 
     // then the plot
     m_plot = new QwtShortPlot();
@@ -62,6 +64,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     // then the status box
     m_texteditStatus = new QTextEdit();
     m_texteditStatus->setReadOnly(true);
+    m_texteditStatus->setTabStopWidth(tabStopWidth);
 
     // Qt 4.4 seems to have drawing problems when scrolling with a gray
     // background on OS X.
@@ -117,15 +120,106 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     buttonLayout->addWidget(m_checkboxLock);
     buttonLayout->addWidget(m_buttonRun);
 
-    m_tabs = new QTabWidget();
-    m_tabs->addTab(m_texteditStatus, "Status");
-    m_tabs->addTab(m_plot, "Simulation Results");
-    m_tabs->setTabEnabled(m_tabs->indexOf(m_plot), false);
+    m_widgetWizard = new QWidget();
+
+    m_labelChannel = new QLabel("Channel");
+    m_sliderChannel = new QSlider(Qt::Horizontal);
+    m_spinChannel = new QSpinBox();
+
+    m_labelPulseWidth = new QLabel("Pulse Width");
+    m_sliderPulseWidth = new QSlider(Qt::Horizontal);
+    m_spinPulseWidth = new QDoubleSpinBox();
+    m_comboPulseWidth = new QComboBox();
+
+    m_labelPulseTrain = new QLabel("Pulse Train");
+    m_checkboxPulseTrain = new QCheckBox();
+
+    m_labelPulseFrequency = new QLabel("Pulse Frequency");
+    m_sliderPulseFrequency = new QSlider(Qt::Horizontal);
+    m_spinPulseFrequency = new QDoubleSpinBox();
+    m_comboPulseFrequency = new QComboBox();
+
+    m_labelTrainDuration = new QLabel("Train Duration");
+    m_sliderTrainDuration = new QSlider(Qt::Horizontal);
+    m_spinTrainDuration = new QDoubleSpinBox();
+    m_comboTrainDuration = new QComboBox();
+
+    m_labelNumTrains = new QLabel("Number of Trains");
+    m_sliderNumTrains = new QSlider(Qt::Horizontal);
+    m_spinNumTrains = new QSpinBox();
+
+    m_labelTrainDelay = new QLabel("Delay between Trains");
+    m_sliderTrainDelay = new QSlider(Qt::Horizontal);
+    m_spinTrainDelay = new QDoubleSpinBox();
+    m_comboTrainDelay = new QComboBox();
+
+    m_labelWizardProgram = new QLabel("Equivalent Program:");
+    m_texteditWizardProgram = new QTextEdit();
+    m_texteditWizardProgram->setReadOnly(true);
+    m_texteditWizardProgram->setTabStopWidth(tabStopWidth);
+    // Qt 4.4 seems to have drawing problems when scrolling with a gray
+    // background on OS X.
+#ifndef Q_WS_MAC
+    // draw the read-only Wizard program box with a gray background.
+    m_texteditWizardProgram->setPalette(p);
+#endif
+
+    QGridLayout* layoutWizard = new QGridLayout();
+    int row = 0;
+    layoutWizard->addWidget(m_labelChannel, row, 0);
+    layoutWizard->addWidget(m_spinChannel, row, 1);
+    layoutWizard->addWidget(m_sliderChannel, row, 3);
+    ++row;
+    layoutWizard->addWidget(m_labelPulseWidth, row, 0);
+    layoutWizard->addWidget(m_spinPulseWidth, row, 1);
+    layoutWizard->addWidget(m_comboPulseWidth, row, 2);
+    layoutWizard->addWidget(m_sliderPulseWidth, row, 3);
+    ++row;
+    layoutWizard->addWidget(m_labelPulseTrain, row, 0);
+    layoutWizard->addWidget(m_checkboxPulseTrain, row, 1);
+    ++row;
+    layoutWizard->addWidget(m_labelPulseFrequency, row, 0);
+    layoutWizard->addWidget(m_spinPulseFrequency, row, 1);
+    layoutWizard->addWidget(m_comboPulseFrequency, row, 2);
+    layoutWizard->addWidget(m_sliderPulseFrequency, row, 3);
+    ++row;
+    layoutWizard->addWidget(m_labelTrainDuration, row, 0);
+    layoutWizard->addWidget(m_spinTrainDuration, row, 1);
+    layoutWizard->addWidget(m_comboTrainDuration, row, 2);
+    layoutWizard->addWidget(m_sliderTrainDuration, row, 3);
+    ++row;
+    layoutWizard->addWidget(m_labelNumTrains, row, 0);
+    layoutWizard->addWidget(m_spinNumTrains, row, 1);
+    layoutWizard->addWidget(m_sliderNumTrains, row, 3);
+    ++row;
+    layoutWizard->addWidget(m_labelTrainDelay, row, 0);
+    layoutWizard->addWidget(m_spinTrainDelay, row, 1);
+    layoutWizard->addWidget(m_comboTrainDelay, row, 2);
+    layoutWizard->addWidget(m_sliderTrainDelay, row, 3);
+    ++row;
+
+    QVBoxLayout* layoutWizardStretch = new QVBoxLayout;
+    layoutWizardStretch->addLayout(layoutWizard);
+    layoutWizardStretch->addWidget(m_labelWizardProgram);
+    layoutWizardStretch->addWidget(m_texteditWizardProgram);
+    //layoutWizardStretch->addStretch();
+    m_widgetWizard->setLayout(layoutWizardStretch);
+
+    m_tabsProgram = new QTabWidget();
+    m_tabsProgram->addTab(m_texteditProgram, "New Program");
+    m_tabsProgram->addTab(m_widgetWizard, "Traditional Controls");
+
+    m_tabsOutput = new QTabWidget();
+    m_tabsOutput->addTab(m_texteditStatus, "Status");
+    m_tabsOutput->addTab(m_plot, "Simulation Results");
+    m_tabsOutput->setTabEnabled(m_tabsOutput->indexOf(m_plot), false);
 
     QVBoxLayout* mainLayout = new QVBoxLayout;
-    mainLayout->addWidget(m_texteditProgram);
-    mainLayout->setStretchFactor(m_texteditProgram, 20);
-    mainLayout->addWidget(m_tabs);
+    //mainLayout->addWidget(m_texteditProgram);
+    //mainLayout->setStretchFactor(m_texteditProgram, 20);
+    mainLayout->addWidget(m_tabsProgram);
+    mainLayout->setStretchFactor(m_tabsProgram, 20);
+    mainLayout->addWidget(m_tabsOutput);
     //mainLayout->addWidget(m_plot);
     //mainLayout->addWidget(m_texteditStatus);
     mainLayout->addLayout(buttonLayout);
@@ -249,8 +343,8 @@ void ProgramGuiWindow::save() {
 
 void ProgramGuiWindow::simulate() {
     // disable the old simulation results and switch to the status tab
-    m_tabs->setCurrentIndex(m_tabs->indexOf(m_texteditStatus));
-    m_tabs->setTabEnabled(m_tabs->indexOf(m_plot), false);
+    m_tabsOutput->setCurrentIndex(m_tabsOutput->indexOf(m_texteditStatus));
+    m_tabsOutput->setTabEnabled(m_tabsOutput->indexOf(m_plot), false);
 
     // clear any previous plot points
     for (unsigned int i = 0; i < numChannels; ++i) {
@@ -382,8 +476,8 @@ void ProgramGuiWindow::simulate() {
     m_plot->replot();
 
     // display the results in the simulation tab
-    m_tabs->setTabEnabled(m_tabs->indexOf(m_plot), true);
-    m_tabs->setCurrentIndex(m_tabs->indexOf(m_plot));
+    m_tabsOutput->setTabEnabled(m_tabsOutput->indexOf(m_plot), true);
+    m_tabsOutput->setCurrentIndex(m_tabsOutput->indexOf(m_plot));
 
 }
 
@@ -416,7 +510,7 @@ void ProgramGuiWindow::run() {
         m_buttonRun->setText(interruptButtonText);
 
         // switch to the status tab
-        m_tabs->setCurrentIndex(m_tabs->indexOf(m_texteditStatus));
+        m_tabsOutput->setCurrentIndex(m_tabsOutput->indexOf(m_texteditStatus));
 
         // split the text into a series of lines
         m_sendBuffer = m_texteditProgram->toPlainText().split('\n');

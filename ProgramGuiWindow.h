@@ -10,6 +10,7 @@
 #include <QMessageBox>
 #include <QTextStream>
 #include <QTabWidget>
+#include <QDoubleSpinBox>
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 
@@ -48,7 +49,45 @@ class ProgramGuiWindow : public QWidget
     QextSerialEnumerator* m_portEnumerator;
 
     // the tab container
-    QTabWidget* m_tabs;
+    QTabWidget* m_tabsOutput;
+    QTabWidget* m_tabsProgram;
+
+    // the wizard controls
+    QWidget* m_widgetWizard;
+
+    QLabel* m_labelChannel;
+    QSlider* m_sliderChannel;
+    QSpinBox* m_spinChannel;
+
+    QLabel* m_labelPulseWidth;
+    QSlider* m_sliderPulseWidth;
+    QDoubleSpinBox* m_spinPulseWidth;
+    QComboBox* m_comboPulseWidth;
+
+    QLabel* m_labelPulseTrain;
+    QCheckBox* m_checkboxPulseTrain;
+
+    QLabel* m_labelPulseFrequency;
+    QSlider* m_sliderPulseFrequency;
+    QDoubleSpinBox* m_spinPulseFrequency;
+    QComboBox* m_comboPulseFrequency;
+
+    QLabel* m_labelTrainDuration;
+    QSlider* m_sliderTrainDuration;
+    QDoubleSpinBox* m_spinTrainDuration;
+    QComboBox* m_comboTrainDuration;
+
+    QLabel* m_labelNumTrains;
+    QSlider* m_sliderNumTrains;
+    QSpinBox* m_spinNumTrains;
+
+    QLabel* m_labelTrainDelay;
+    QSlider* m_sliderTrainDelay;
+    QDoubleSpinBox* m_spinTrainDelay;
+    QComboBox* m_comboTrainDelay;
+
+    QLabel* m_labelWizardProgram;
+    QTextEdit* m_texteditWizardProgram;
 
     // lines buffered to send to the device
     QStringList m_sendBuffer;
