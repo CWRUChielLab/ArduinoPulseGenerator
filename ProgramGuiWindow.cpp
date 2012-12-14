@@ -64,6 +64,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     // then the status box
     m_texteditStatus = new QTextEdit();
     m_texteditStatus->setReadOnly(true);
+    m_texteditStatus->setLineWrapMode(QTextEdit::NoWrap);
     m_texteditStatus->setTabStopWidth(tabStopWidth);
 
     // Qt 4.4 seems to have drawing problems when scrolling with a gray
@@ -195,6 +196,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     m_labelWizardProgram = new QLabel("Equivalent Program:");
     m_texteditWizardProgram = new QTextEdit();
     m_texteditWizardProgram->setReadOnly(true);
+    m_texteditWizardProgram->setLineWrapMode(QTextEdit::NoWrap);
     m_texteditWizardProgram->setTabStopWidth(tabStopWidth);
     // Qt 4.4 seems to have drawing problems when scrolling with a gray
     // background on OS X.
@@ -202,6 +204,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     // draw the read-only Wizard program box with a gray background.
     m_texteditWizardProgram->setPalette(p);
 #endif
+    updateEquivalentProgram();
 
     QGridLayout* layoutWizard = new QGridLayout();
     int row = 0;
@@ -269,7 +272,20 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     m_portEnumerator = new QextSerialEnumerator(this);
     m_portEnumerator->setUpNotifications();
 
-    // link controls together
+    // attach signals to main controls
+    QObject::connect(m_buttonHelp, SIGNAL(clicked()), this, SLOT(help()));
+    QObject::connect(m_buttonNew, SIGNAL(clicked()), this, SLOT(newDocument()));
+    QObject::connect(m_buttonOpen, SIGNAL(clicked()), this, SLOT(open()));
+    QObject::connect(m_buttonSave, SIGNAL(clicked()), this, SLOT(save()));
+    QObject::connect(m_buttonSimulate, SIGNAL(clicked()), this, SLOT(simulate()));
+    QObject::connect(m_buttonRun, SIGNAL(clicked()), this, SLOT(run()));
+    QObject::connect(m_checkboxLock, SIGNAL(stateChanged(int)), SLOT(onLockStateChanged(int)));
+    QObject::connect(m_portEnumerator, SIGNAL(deviceDiscovered(QextPortInfo)),
+            SLOT(repopulatePortComboBox()));
+    QObject::connect(m_portEnumerator, SIGNAL(deviceRemoved(QextPortInfo)),
+            SLOT(repopulatePortComboBox()));
+
+    // link traditional controls together
     QObject::connect(m_sliderChannel, SIGNAL(valueChanged(int)), m_spinChannel, SLOT(setValue(int)));
     QObject::connect(m_spinChannel, SIGNAL(valueChanged(int)), m_sliderChannel, SLOT(setValue(int)));
     QObject::connect(m_sliderNumTrains, SIGNAL(valueChanged(int)), m_spinNumTrains, SLOT(setValue(int)));
@@ -286,18 +302,18 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     QObject::connect(m_spinNumTrains, SIGNAL(valueChanged(int)), SLOT(updateWizardDisabledControls()));
     QObject::connect(m_sliderNumTrains, SIGNAL(valueChanged(int)), SLOT(updateWizardDisabledControls()));
 
-    // attach other signals as needed
-    QObject::connect(m_buttonHelp, SIGNAL(clicked()), this, SLOT(help()));
-    QObject::connect(m_buttonNew, SIGNAL(clicked()), this, SLOT(newDocument()));
-    QObject::connect(m_buttonOpen, SIGNAL(clicked()), this, SLOT(open()));
-    QObject::connect(m_buttonSave, SIGNAL(clicked()), this, SLOT(save()));
-    QObject::connect(m_buttonSimulate, SIGNAL(clicked()), this, SLOT(simulate()));
-    QObject::connect(m_buttonRun, SIGNAL(clicked()), this, SLOT(run()));
-    QObject::connect(m_checkboxLock, SIGNAL(stateChanged(int)), SLOT(onLockStateChanged(int)));
-    QObject::connect(m_portEnumerator, SIGNAL(deviceDiscovered(QextPortInfo)),
-            SLOT(repopulatePortComboBox()));
-    QObject::connect(m_portEnumerator, SIGNAL(deviceRemoved(QextPortInfo)),
-            SLOT(repopulatePortComboBox()));
+    // update the program whenever a value changes
+    QObject::connect(m_spinChannel, SIGNAL(valueChanged(int)), this, SLOT(updateEquivalentProgram()));
+    QObject::connect(m_spinPulseWidth, SIGNAL(valueChanged(double)), this, SLOT(updateEquivalentProgram()));
+    QObject::connect(m_comboPulseWidth, SIGNAL(currentIndexChanged(int)), this, SLOT(updateEquivalentProgram()));
+    QObject::connect(m_spinPulseFrequency, SIGNAL(valueChanged(double)), this, SLOT(updateEquivalentProgram()));
+    QObject::connect(m_comboPulseFrequency, SIGNAL(currentIndexChanged(int)), this, SLOT(updateEquivalentProgram()));
+    QObject::connect(m_spinTrainDuration, SIGNAL(valueChanged(double)), this, SLOT(updateEquivalentProgram()));
+    QObject::connect(m_comboTrainDuration, SIGNAL(currentIndexChanged(int)), this, SLOT(updateEquivalentProgram()));
+    QObject::connect(m_spinTrainDelay, SIGNAL(valueChanged(double)), this, SLOT(updateEquivalentProgram()));
+    QObject::connect(m_comboTrainDelay, SIGNAL(currentIndexChanged(int)), this, SLOT(updateEquivalentProgram()));
+    QObject::connect(m_checkboxPulseTrain, SIGNAL(stateChanged(int)), this, SLOT(updateEquivalentProgram()));
+    QObject::connect(m_spinNumTrains, SIGNAL(valueChanged(int)), this, SLOT(updateEquivalentProgram()));
 
     setWindowTitle("Arduino Pulse Generator - new Program");
 };
@@ -613,6 +629,100 @@ void ProgramGuiWindow::updateWizardDisabledControls() {
     m_spinTrainDelay->setEnabled(bEnableDelay);
     m_sliderTrainDelay->setEnabled(bEnableDelay);
     m_comboTrainDelay->setEnabled(bEnableDelay);
+}
+
+
+void ProgramGuiWindow::updateEquivalentProgram() {
+    bool bEnableTrains = m_checkboxPulseTrain->isChecked();
+    int channel = m_spinChannel->value();
+    double pulseWidth = m_spinPulseWidth->value();
+    QString unitsPulseWidth = m_comboPulseWidth->currentText();
+    double pulseFrequency = m_spinPulseFrequency->value();
+    QString unitsPulseFrequency = m_comboPulseFrequency->currentText();
+    double trainDuration = m_spinTrainDuration->value();
+    QString unitsTrainDuration = m_comboTrainDuration->currentText();
+    double trainDelay = m_spinTrainDelay->value();
+    QString unitsTrainDelay = m_comboTrainDelay->currentText();
+    int numTrains = m_spinNumTrains->value();
+
+    if (!bEnableTrains) {
+        m_texteditWizardProgram->setText(
+                "# generate a single pulse\n"
+                "turn on channel " + QString::number(channel) + "\n"
+                "wait " + QString::number(pulseWidth, 'f', 2) + " " + unitsPulseWidth + "\n"
+                "turn off channel " + QString::number(channel) + "\n"
+                "\n"
+                "end program"
+            );
+    } else if (numTrains == 1) {
+        m_texteditWizardProgram->setText(
+                "# generate a pulse train\n"
+                "set channel " + QString::number(channel) + " to "
+                    + QString::number(pulseWidth, 'f', 2) + " " + unitsPulseWidth +
+                    " pulses at "
+                    + QString::number(pulseFrequency, 'f', 2) + " " + unitsPulseFrequency +
+                    + "\n"
+                "wait " + QString::number(trainDuration, 'f', 2) + " " + unitsTrainDuration + "\n"
+                "turn off channel " + QString::number(channel) + "\n"
+                "\n"
+                "end program"
+            );
+    } else if (numTrains == 2) {
+        m_texteditWizardProgram->setText(
+                "# generate the first pulse train\n"
+                "set channel " + QString::number(channel) + " to "
+                    + QString::number(pulseWidth, 'f', 2) + " " + unitsPulseWidth +
+                    " pulses at "
+                    + QString::number(pulseFrequency, 'f', 2) + " " + unitsPulseFrequency +
+                    + "\n"
+                "wait " + QString::number(trainDuration, 'f', 2) + " " + unitsTrainDuration + "\n"
+                "turn off channel " + QString::number(channel) + "\n"
+                "\n"
+                "# delay between pulse trains\n"
+                "wait " + QString::number(trainDelay, 'f', 2) + " " + unitsTrainDelay + "\n"
+                "\n"
+                "# generate the second pulse train\n"
+                "set channel " + QString::number(channel) + " to "
+                    + QString::number(pulseWidth, 'f', 2) + " " + unitsPulseWidth +
+                    " pulses at "
+                    + QString::number(pulseFrequency, 'f', 2) + " " + unitsPulseFrequency +
+                    + "\n"
+                "wait " + QString::number(trainDuration, 'f', 2) + " " + unitsTrainDuration + "\n"
+                "turn off channel " + QString::number(channel) + "\n"
+                "\n"
+                "end program"
+            );
+    } else {
+        m_texteditWizardProgram->setText(
+                "# The last pulse train isn't followed by a delay, so we use\n"
+                "# a loop to generate all but the last pulse train and the\n"
+                "# delay after each of these pulse trains.\n"
+                "repeat " + QString::number(numTrains - 1) + " times:\n"
+                "\t# generate a pulse train\n"
+                "\tset channel " + QString::number(channel) + " to "
+                    + QString::number(pulseWidth, 'f', 2) + " " + unitsPulseWidth +
+                    " pulses at "
+                    + QString::number(pulseFrequency, 'f', 2) + " " + unitsPulseFrequency +
+                    + "\n"
+                "\twait " + QString::number(trainDuration, 'f', 2) + " " + unitsTrainDuration + "\n"
+                "\tturn off channel " + QString::number(channel) + "\n"
+                "\t\n"
+                "\t# delay between pulse trains\n"
+                "\twait " + QString::number(trainDelay, 'f', 2) + " " + unitsTrainDelay + "\n"
+                "end repeat\n"
+                "\n"
+                "# generate the last pulse train (with no delay after it)\n"
+                "set channel " + QString::number(channel) + " to "
+                    + QString::number(pulseWidth, 'f', 2) + " " + unitsPulseWidth +
+                    " pulses at "
+                    + QString::number(pulseFrequency, 'f', 2) + " " + unitsPulseFrequency +
+                    + "\n"
+                "wait " + QString::number(trainDuration, 'f', 2) + " " + unitsTrainDuration + "\n"
+                "turn off channel " + QString::number(channel) + "\n"
+                "\n"
+                "end program"
+            );
+    }
 }
 
 

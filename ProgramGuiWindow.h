@@ -117,6 +117,7 @@ private Q_SLOTS:
     void updateWizardDisabledControls();
 
     void repopulatePortComboBox();
+    void updateEquivalentProgram();
 
 public:
     ProgramGuiWindow(QWidget* parent = NULL);
