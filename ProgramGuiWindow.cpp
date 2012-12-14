@@ -452,9 +452,15 @@ void ProgramGuiWindow::save() {
             return;
         }
         QTextStream out(&file);
-        out << m_texteditProgram->toPlainText();
 
-        updateProgramName(QFileInfo(fileName).baseName());
+        // save text from the appropriate tab
+        if (m_tabsProgram->currentIndex() == m_tabsProgram->indexOf(m_texteditProgram)) {
+            out << m_texteditProgram->toPlainText();
+
+            updateProgramName(QFileInfo(fileName).baseName());
+        } else {
+            out << m_texteditTraditionalProgram->toPlainText();
+        }
     }
 }
 
