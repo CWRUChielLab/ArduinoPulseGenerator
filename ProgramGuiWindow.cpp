@@ -121,7 +121,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     buttonLayout->addWidget(m_checkboxLock);
     buttonLayout->addWidget(m_buttonRun);
 
-    m_widgetWizard = new QWidget();
+    m_widgetTraditional = new QWidget();
 
     m_labelChannel = new QLabel("Channel");
     m_sliderChannel = new QSlider(Qt::Horizontal);
@@ -191,65 +191,65 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     m_comboTrainDelay->addItem("\xB5s");
     m_comboTrainDelay->setCurrentIndex(0);
 
-    updateWizardDisabledControls();
+    updateTraditionalDisabledControls();
 
-    m_labelWizardProgram = new QLabel("Equivalent Program:");
-    m_texteditWizardProgram = new QTextEdit();
-    m_texteditWizardProgram->setReadOnly(true);
-    m_texteditWizardProgram->setLineWrapMode(QTextEdit::NoWrap);
-    m_texteditWizardProgram->setTabStopWidth(tabStopWidth);
+    m_labelTraditionalProgram = new QLabel("Equivalent Program:");
+    m_texteditTraditionalProgram = new QTextEdit();
+    m_texteditTraditionalProgram->setReadOnly(true);
+    m_texteditTraditionalProgram->setLineWrapMode(QTextEdit::NoWrap);
+    m_texteditTraditionalProgram->setTabStopWidth(tabStopWidth);
     // Qt 4.4 seems to have drawing problems when scrolling with a gray
     // background on OS X.
 #ifndef Q_WS_MAC
-    // draw the read-only Wizard program box with a gray background.
-    m_texteditWizardProgram->setPalette(p);
+    // draw the read-only Traditional program box with a gray background.
+    m_texteditTraditionalProgram->setPalette(p);
 #endif
     updateEquivalentProgram();
 
-    QGridLayout* layoutWizard = new QGridLayout();
+    QGridLayout* layoutTraditional = new QGridLayout();
     int row = 0;
-    layoutWizard->addWidget(m_labelChannel, row, 0);
-    layoutWizard->addWidget(m_spinChannel, row, 1);
-    layoutWizard->addWidget(m_sliderChannel, row, 3);
+    layoutTraditional->addWidget(m_labelChannel, row, 0);
+    layoutTraditional->addWidget(m_spinChannel, row, 1);
+    layoutTraditional->addWidget(m_sliderChannel, row, 3);
     ++row;
-    layoutWizard->addWidget(m_labelPulseWidth, row, 0);
-    layoutWizard->addWidget(m_spinPulseWidth, row, 1);
-    layoutWizard->addWidget(m_comboPulseWidth, row, 2);
-    layoutWizard->addWidget(m_sliderPulseWidth, row, 3);
+    layoutTraditional->addWidget(m_labelPulseWidth, row, 0);
+    layoutTraditional->addWidget(m_spinPulseWidth, row, 1);
+    layoutTraditional->addWidget(m_comboPulseWidth, row, 2);
+    layoutTraditional->addWidget(m_sliderPulseWidth, row, 3);
     ++row;
-    layoutWizard->addWidget(m_labelPulseTrain, row, 0);
-    layoutWizard->addWidget(m_checkboxPulseTrain, row, 1);
+    layoutTraditional->addWidget(m_labelPulseTrain, row, 0);
+    layoutTraditional->addWidget(m_checkboxPulseTrain, row, 1);
     ++row;
-    layoutWizard->addWidget(m_labelPulseFrequency, row, 0);
-    layoutWizard->addWidget(m_spinPulseFrequency, row, 1);
-    layoutWizard->addWidget(m_comboPulseFrequency, row, 2);
-    layoutWizard->addWidget(m_sliderPulseFrequency, row, 3);
+    layoutTraditional->addWidget(m_labelPulseFrequency, row, 0);
+    layoutTraditional->addWidget(m_spinPulseFrequency, row, 1);
+    layoutTraditional->addWidget(m_comboPulseFrequency, row, 2);
+    layoutTraditional->addWidget(m_sliderPulseFrequency, row, 3);
     ++row;
-    layoutWizard->addWidget(m_labelTrainDuration, row, 0);
-    layoutWizard->addWidget(m_spinTrainDuration, row, 1);
-    layoutWizard->addWidget(m_comboTrainDuration, row, 2);
-    layoutWizard->addWidget(m_sliderTrainDuration, row, 3);
+    layoutTraditional->addWidget(m_labelTrainDuration, row, 0);
+    layoutTraditional->addWidget(m_spinTrainDuration, row, 1);
+    layoutTraditional->addWidget(m_comboTrainDuration, row, 2);
+    layoutTraditional->addWidget(m_sliderTrainDuration, row, 3);
     ++row;
-    layoutWizard->addWidget(m_labelNumTrains, row, 0);
-    layoutWizard->addWidget(m_spinNumTrains, row, 1);
-    layoutWizard->addWidget(m_sliderNumTrains, row, 3);
+    layoutTraditional->addWidget(m_labelNumTrains, row, 0);
+    layoutTraditional->addWidget(m_spinNumTrains, row, 1);
+    layoutTraditional->addWidget(m_sliderNumTrains, row, 3);
     ++row;
-    layoutWizard->addWidget(m_labelTrainDelay, row, 0);
-    layoutWizard->addWidget(m_spinTrainDelay, row, 1);
-    layoutWizard->addWidget(m_comboTrainDelay, row, 2);
-    layoutWizard->addWidget(m_sliderTrainDelay, row, 3);
+    layoutTraditional->addWidget(m_labelTrainDelay, row, 0);
+    layoutTraditional->addWidget(m_spinTrainDelay, row, 1);
+    layoutTraditional->addWidget(m_comboTrainDelay, row, 2);
+    layoutTraditional->addWidget(m_sliderTrainDelay, row, 3);
     ++row;
 
-    QVBoxLayout* layoutWizardStretch = new QVBoxLayout;
-    layoutWizardStretch->addLayout(layoutWizard);
-    layoutWizardStretch->addWidget(m_labelWizardProgram);
-    layoutWizardStretch->addWidget(m_texteditWizardProgram);
-    //layoutWizardStretch->addStretch();
-    m_widgetWizard->setLayout(layoutWizardStretch);
+    QVBoxLayout* layoutTraditionalStretch = new QVBoxLayout;
+    layoutTraditionalStretch->addLayout(layoutTraditional);
+    layoutTraditionalStretch->addWidget(m_labelTraditionalProgram);
+    layoutTraditionalStretch->addWidget(m_texteditTraditionalProgram);
+    //layoutTraditionalStretch->addStretch();
+    m_widgetTraditional->setLayout(layoutTraditionalStretch);
 
     m_tabsProgram = new QTabWidget();
     m_tabsProgram->addTab(m_texteditProgram, "New Program");
-    m_tabsProgram->addTab(m_widgetWizard, "Traditional Controls");
+    m_tabsProgram->addTab(m_widgetTraditional, "Traditional Controls");
 
     m_tabsOutput = new QTabWidget();
     m_tabsOutput->addTab(m_texteditStatus, "Status");
@@ -298,9 +298,9 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     QObject::connect(m_spinTrainDuration, SIGNAL(valueChanged(double)), this, SLOT(changeTrainDuration(double)));
     QObject::connect(m_sliderTrainDelay, SIGNAL(valueChanged(int)), this, SLOT(changeTrainDelay(int)));
     QObject::connect(m_spinTrainDelay, SIGNAL(valueChanged(double)), this, SLOT(changeTrainDelay(double)));
-    QObject::connect(m_checkboxPulseTrain, SIGNAL(stateChanged(int)), SLOT(updateWizardDisabledControls()));
-    QObject::connect(m_spinNumTrains, SIGNAL(valueChanged(int)), SLOT(updateWizardDisabledControls()));
-    QObject::connect(m_sliderNumTrains, SIGNAL(valueChanged(int)), SLOT(updateWizardDisabledControls()));
+    QObject::connect(m_checkboxPulseTrain, SIGNAL(stateChanged(int)), SLOT(updateTraditionalDisabledControls()));
+    QObject::connect(m_spinNumTrains, SIGNAL(valueChanged(int)), SLOT(updateTraditionalDisabledControls()));
+    QObject::connect(m_sliderNumTrains, SIGNAL(valueChanged(int)), SLOT(updateTraditionalDisabledControls()));
 
     // update the program whenever a value changes
     QObject::connect(m_spinChannel, SIGNAL(valueChanged(int)), this, SLOT(updateEquivalentProgram()));
@@ -607,7 +607,7 @@ void ProgramGuiWindow::onLockStateChanged(int state) {
 }
 
 
-void ProgramGuiWindow::updateWizardDisabledControls() {
+void ProgramGuiWindow::updateTraditionalDisabledControls() {
     bool bEnableTrains = m_checkboxPulseTrain->isChecked();
 
     m_labelPulseFrequency->setEnabled(bEnableTrains);
@@ -646,7 +646,7 @@ void ProgramGuiWindow::updateEquivalentProgram() {
     int numTrains = m_spinNumTrains->value();
 
     if (!bEnableTrains) {
-        m_texteditWizardProgram->setText(
+        m_texteditTraditionalProgram->setText(
                 "# generate a single pulse\n"
                 "turn on channel " + QString::number(channel) + "\n"
                 "wait " + QString::number(pulseWidth, 'f', 2) + " " + unitsPulseWidth + "\n"
@@ -655,7 +655,7 @@ void ProgramGuiWindow::updateEquivalentProgram() {
                 "end program"
             );
     } else if (numTrains == 1) {
-        m_texteditWizardProgram->setText(
+        m_texteditTraditionalProgram->setText(
                 "# generate a pulse train\n"
                 "set channel " + QString::number(channel) + " to "
                     + QString::number(pulseWidth, 'f', 2) + " " + unitsPulseWidth +
@@ -668,7 +668,7 @@ void ProgramGuiWindow::updateEquivalentProgram() {
                 "end program"
             );
     } else if (numTrains == 2) {
-        m_texteditWizardProgram->setText(
+        m_texteditTraditionalProgram->setText(
                 "# generate the first pulse train\n"
                 "set channel " + QString::number(channel) + " to "
                     + QString::number(pulseWidth, 'f', 2) + " " + unitsPulseWidth +
@@ -693,7 +693,7 @@ void ProgramGuiWindow::updateEquivalentProgram() {
                 "end program"
             );
     } else {
-        m_texteditWizardProgram->setText(
+        m_texteditTraditionalProgram->setText(
                 "# The last pulse train isn't followed by a delay, so we use\n"
                 "# a loop to generate all but the last pulse train and the\n"
                 "# delay after each of these pulse trains.\n"

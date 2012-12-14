@@ -52,8 +52,8 @@ class ProgramGuiWindow : public QWidget
     QTabWidget* m_tabsOutput;
     QTabWidget* m_tabsProgram;
 
-    // the wizard/traditional controls
-    QWidget* m_widgetWizard;
+    // the traditional controls
+    QWidget* m_widgetTraditional;
 
     QLabel* m_labelChannel;
     QSlider* m_sliderChannel;
@@ -86,8 +86,8 @@ class ProgramGuiWindow : public QWidget
     QDoubleSpinBox* m_spinTrainDelay;
     QComboBox* m_comboTrainDelay;
 
-    QLabel* m_labelWizardProgram;
-    QTextEdit* m_texteditWizardProgram;
+    QLabel* m_labelTraditionalProgram;
+    QTextEdit* m_texteditTraditionalProgram;
 
     // lines buffered to send to the device
     QStringList m_sendBuffer;
@@ -114,7 +114,7 @@ private Q_SLOTS:
 
     void onNewSerialData();
     void onLockStateChanged(int state);
-    void updateWizardDisabledControls();
+    void updateTraditionalDisabledControls();
 
     void repopulatePortComboBox();
     void updateEquivalentProgram();
