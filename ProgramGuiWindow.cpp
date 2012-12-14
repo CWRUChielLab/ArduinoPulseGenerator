@@ -248,7 +248,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     m_widgetTraditional->setLayout(layoutTraditionalStretch);
 
     m_tabsProgram = new QTabWidget();
-    m_tabsProgram->addTab(m_texteditProgram, "New Program");
+    m_tabsProgram->addTab(m_texteditProgram, "<new program>");
     m_tabsProgram->addTab(m_widgetTraditional, "Traditional Controls");
 
     m_tabsOutput = new QTabWidget();
@@ -475,9 +475,15 @@ void ProgramGuiWindow::simulate() {
     m_texteditStatus->moveCursor(QTextCursor::End);
     m_texteditStatus->insertPlainText("\n\nParsing...\n");
 
+    // read the program from the appropriate tab
+    QStringList lines;
+    if (m_tabsProgram->currentIndex() == m_tabsProgram->indexOf(m_texteditProgram)) {
+        lines = m_texteditProgram->toPlainText().split('\n');
+    } else {
+        lines = m_texteditTraditionalProgram->toPlainText().split('\n');
+    }
 
     // Parse the program
-    QStringList lines = m_texteditProgram->toPlainText().split('\n');
     QVector<PulseStateCommand> commands;
     const char* error = NULL;
     unsigned repeatDepth = 0;
@@ -751,8 +757,13 @@ void ProgramGuiWindow::run() {
         // switch to the status tab
         m_tabsOutput->setCurrentIndex(m_tabsOutput->indexOf(m_texteditStatus));
 
-        // split the text into a series of lines
-        m_sendBuffer = m_texteditProgram->toPlainText().split('\n');
+        // read the program from the appropriate tab
+        QStringList lines;
+        if (m_tabsProgram->currentIndex() == m_tabsProgram->indexOf(m_texteditProgram)) {
+            m_sendBuffer = m_texteditProgram->toPlainText().split('\n');
+        } else {
+            m_sendBuffer = m_texteditTraditionalProgram->toPlainText().split('\n');
+        }
 
         // Add a dummy line at the beginning to work around a race condition
         // when the Arduino resets.
