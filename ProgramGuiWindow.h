@@ -123,6 +123,7 @@ public:
     ProgramGuiWindow(QWidget* parent = NULL);
 
     virtual QSize sizeHint() const;
+    void updateProgramName(const QString& name);
 };
 
 #endif /* PROGRAMGUIWINDOW_H */

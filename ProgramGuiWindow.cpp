@@ -315,7 +315,7 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     QObject::connect(m_checkboxPulseTrain, SIGNAL(stateChanged(int)), this, SLOT(updateEquivalentProgram()));
     QObject::connect(m_spinNumTrains, SIGNAL(valueChanged(int)), this, SLOT(updateEquivalentProgram()));
 
-    setWindowTitle("Arduino Pulse Generator - new Program");
+    updateProgramName("<new program>");
 };
 
 
@@ -431,8 +431,7 @@ void ProgramGuiWindow::open() {
 
         ProgramGuiWindow* newWindow = new ProgramGuiWindow();
 
-        newWindow->setWindowTitle("Arduino Pulse Generator - " +
-                QFileInfo(fileName).baseName());
+        newWindow->updateProgramName(QFileInfo(fileName).baseName());
         newWindow->m_comboPort->setCurrentIndex(m_comboPort->currentIndex());
         newWindow->m_texteditProgram->setText(in.readAll());
         newWindow->show();
@@ -455,8 +454,7 @@ void ProgramGuiWindow::save() {
         QTextStream out(&file);
         out << m_texteditProgram->toPlainText();
 
-        setWindowTitle("Arduino Pulse Generator - " +
-                QFileInfo(fileName).baseName());
+        updateProgramName(QFileInfo(fileName).baseName());
     }
 }
 
@@ -793,3 +791,10 @@ void ProgramGuiWindow::repopulatePortComboBox()
 
     m_comboPort->setCurrentIndex(m_comboPort->findText(currentPortName));
 }
+
+
+void ProgramGuiWindow::updateProgramName(const QString& name) {
+    setWindowTitle("Arduino Pulse Generator - " + name);
+    m_tabsProgram->setTabText(m_tabsProgram->indexOf(m_texteditProgram), name);
+}
+
