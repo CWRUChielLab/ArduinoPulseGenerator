@@ -204,7 +204,6 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     // draw the read-only Traditional program box with a gray background.
     m_texteditTraditionalProgram->setPalette(p);
 #endif
-    updateEquivalentProgram();
 
     QGridLayout* layoutTraditional = new QGridLayout();
     int row = 0;
@@ -301,6 +300,9 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     QObject::connect(m_checkboxPulseTrain, SIGNAL(stateChanged(int)), SLOT(updateTraditionalDisabledControls()));
     QObject::connect(m_spinNumTrains, SIGNAL(valueChanged(int)), SLOT(updateTraditionalDisabledControls()));
     QObject::connect(m_sliderNumTrains, SIGNAL(valueChanged(int)), SLOT(updateTraditionalDisabledControls()));
+    QObject::connect(m_spinPulseWidth, SIGNAL(valueChanged(double)), this, SLOT(updateFrequencyControlsRange()));
+    QObject::connect(m_comboPulseWidth, SIGNAL(currentIndexChanged(int)), this, SLOT(updateFrequencyControlsRange()));
+    QObject::connect(m_comboPulseFrequency, SIGNAL(currentIndexChanged(int)), this, SLOT(updateFrequencyControlsRange()));
 
     // update the program whenever a value changes
     QObject::connect(m_spinChannel, SIGNAL(valueChanged(int)), this, SLOT(updateEquivalentProgram()));
@@ -316,6 +318,8 @@ ProgramGuiWindow::ProgramGuiWindow(QWidget* parent) :
     QObject::connect(m_spinNumTrains, SIGNAL(valueChanged(int)), this, SLOT(updateEquivalentProgram()));
 
     updateProgramName("<new program>");
+    updateFrequencyControlsRange();
+    updateEquivalentProgram();
 };
 
 
@@ -639,6 +643,27 @@ void ProgramGuiWindow::updateTraditionalDisabledControls() {
     m_spinTrainDelay->setEnabled(bEnableDelay);
     m_sliderTrainDelay->setEnabled(bEnableDelay);
     m_comboTrainDelay->setEnabled(bEnableDelay);
+}
+
+
+void ProgramGuiWindow::updateFrequencyControlsRange() {
+    double pulseWidth = m_spinPulseWidth->value();
+    QString unitsPulseWidth = m_comboPulseWidth->currentText();
+    QString unitsPulseFrequency = m_comboPulseFrequency->currentText();
+
+    if (unitsPulseWidth == "\xB5s") {
+        pulseWidth *= 1e-6;
+    } else if (unitsPulseWidth == "ms") {
+        pulseWidth *= 1e-3;
+    }
+
+    double maxFrequency = 1 / pulseWidth;
+    if (unitsPulseFrequency == "kHz") {
+        maxFrequency *= 1e-3;
+    }
+
+    m_spinPulseFrequency->setMaximum(maxFrequency);
+    m_sliderPulseFrequency->setMaximum(maxFrequency);
 }
 
 
