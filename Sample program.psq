@@ -1,0 +1,47 @@
+# Generate a 2 second pulse on channels 1 and 8
+turn on channel 1
+turn on channel 8
+wait 2 s
+turn off channel 1
+turn off channel 8
+
+wait 1 s
+
+# start a pulse train on channel 2
+set channel 2 to 10 ms pulses at 10 Hz
+
+# generate a pulse train on channel 7
+set channel 7 to 5 ms pulses at 2 Hz
+wait 1.5 s
+turn off channel 7
+
+wait 0.75 s
+
+# generate a pulse train on channels 3 and 6
+set channel 3 to 10 ms pulses at 3 Hz
+set channel 6 to 12 ms pulses at 5 Hz
+wait 2 s
+turn off channel 3
+turn off channel 6
+
+wait 1 s
+
+turn off channel 2
+
+# generate a pulse train on channels 4 and 5
+set channel 4 to 200 ms pulses at 2.1 Hz
+set channel 5 to 5 ms pulses at 100 Hz
+wait 2 s
+turn off channel 4
+turn off channel 5
+
+wait 0.5 s
+
+# generate a pulse train on channels 3 and 6
+set channel 6 to 200 ms pulses at 2.5 Hz
+set channel 3 to 5 ms pulses at 6 Hz
+wait 1 s
+turn off channel 6
+turn off channel 3
+
+end program

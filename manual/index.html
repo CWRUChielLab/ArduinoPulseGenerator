@@ -81,6 +81,66 @@ end program
 
 <h2 id="controls">Controls</h2>
 
+<h3>Program Tabs</h3>
+
+<p>The <b>Program Tabs</b> allow you to choose between using controls or
+text-based instructions to describe a pulse sequence.  The first tab is labeled
+with the name of the program (initially "&lt;new program&gt;", and provides
+an edit box for creating your program.  The second tab is labeled
+<b>Traditional Controls</b>, and provides the following controls for creating
+a pulse sequence:</p>
+
+<div class="definitions">
+    <h4>Channel</h4>
+    <p>The <b>Traditional Controls</b> allow you to generate a pulse sequence on
+    a single channel determined by the <b>Channel></b> control.<p>
+
+    <h4>Pulse Width</h4>
+    <p>Specifies the width of each individual pulse in this pulse sequence.<p>
+
+    <h4>Pulse Train</h4>
+    <p>Allows you to generate multiple pulses when this box is checked, and a
+    single pulse when not checked.  All of the controls below this control aren't
+    relevant for a single pulse and thus are disabled when this box is
+    not checked<p>
+
+    <h4>Pulse Frequency</h4>
+    <p>Specifies the number of pulses to generate per second during a pulse
+    train.  Note that the maximum frequency is limited by the pulse width; for
+    example if the pulse width is 100 ms, one can only fit 10 pulses into a
+    second (at which point the channel is simply on all of the time).<p>
+
+    <h4>Train Duration</h4>
+    <p>Specifies the period of time to generate pulses at the given pulse
+    frequency before pausing.  This duration is considered to be one train of
+    pulses</p>
+
+    <h4>Number of Trains</h4>
+    <p>Specifies the number of pulse trains to generate.</p>
+
+    <h4>Delay between Trains</h4>
+    <p>Specifies the time to wait between the end of one pulse train and the
+    start of the next.  This is only meaningful (and thus only enabled) if more
+    than one pulse train will be generated. </p>
+
+    <h4>Equivalent Program</h4>
+    <p>Displays the program that has been generated from the controls above.</p>
+</div>
+
+<p>The program in the first of the <b>Program Tabs</b> will usually not be the
+same as the program in the <b>Traditional Controls</b> tab.  The currently
+active tab in the <b>Program Tabs</b> specifies the program that is saved,
+simulated, or run by the <b>Save</b>, <b>Simulate</b>, or <b>Run on Device</b>
+buttons respectively.</p>
+
+<p>It's often faster to describe simple pulse sequences using the
+<b>Tradition Controls</b> tab, but the text-based interface allows much more
+complex pulse sequences to be described.  When first learning the text-based
+programming language, it may be useful to use the <b>Traditional Controls</b>
+to generate an initial pulse sequence and then copy and paste the equivalent
+program into the &lt;new program&gt; tab.  You can then make modifications and
+test them using the <b>Simulate</b> button.<p>
+
 <h3>Help</h3>
 
 <p>The <b>Help</b> button can be used to open this manual in a web browser.</p>
@@ -125,7 +185,7 @@ pressing the <b>Run on Device</b> button when you meant to press
 
 <h3>Run on Device</h3>
 
-<p>The <b>Run on Device</b> button will upload the program to the Arduino
+<p>The <b>Run on Device</b> button will upload the current program to the Arduino
 which will then run the program, generating the pulse sequence.  Note that
 the correct port for the Arduino must be selected in the <b>Port</b> combo
 box for this command to work.</p>
