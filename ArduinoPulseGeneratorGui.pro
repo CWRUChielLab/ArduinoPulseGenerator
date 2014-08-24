@@ -3,10 +3,13 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET =
+TARGET = ArduinoPulseGenerator
 DEPENDPATH += .
 INCLUDEPATH += . PulseStateMachine
 CONFIG += no_keywords
+
+QT       += core gui
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport concurrent
 
 # libraries
 include(libs/qwt/src/qwt.pri)

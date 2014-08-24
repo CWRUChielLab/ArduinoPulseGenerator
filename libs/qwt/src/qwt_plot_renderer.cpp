@@ -246,8 +246,7 @@ void QwtPlotRenderer::renderDocument( QwtPlot *plot,
         printer.setPaperSize( sizeMM, QPrinter::Millimeter );
         printer.setDocName( title );
         printer.setOutputFileName( fileName );
-        printer.setOutputFormat( ( format == "pdf" )
-            ? QPrinter::PdfFormat : QPrinter::PostScriptFormat );
+        printer.setOutputFormat(QPrinter::PdfFormat);
         printer.setResolution( resolution );
 
         QPainter painter( &printer );

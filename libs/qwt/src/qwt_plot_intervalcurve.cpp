@@ -1,3 +1,4 @@
+#include <stdlib.h>
 /* -*- mode: C++ ; c-file-style: "stroustrup" -*- *****************************
  * Qwt Widget Library
  * Copyright (C) 1997   Josef Wilgen
@@ -411,12 +412,12 @@ void QwtPlotIntervalCurve::drawTube( QPainter *painter,
             QPolygonF p;
 
             p.resize( size );
-            qMemCopy( p.data(), points, size * sizeof( QPointF ) );
+            memcpy( p.data(), points, size * sizeof( QPointF ) );
             p = QwtClipper::clipPolygonF( canvasRect, p );
             QwtPainter::drawPolyline( painter, p );
 
             p.resize( size );
-            qMemCopy( p.data(), points + size, size * sizeof( QPointF ) );
+            memcpy( p.data(), points + size, size * sizeof( QPointF ) );
             p = QwtClipper::clipPolygonF( canvasRect, p );
             QwtPainter::drawPolyline( painter, p );
         }
