@@ -10,7 +10,7 @@ Arduino Due (timing accuracy ~ ±35 μs); it may work on other Arduino boards bu
 this has not been tested.
 
 For information on using this software, please see the `ArduinoPulseGenerator
-website <http://kms15.github.com/ArduinoPulseGenerator/>`_.
+website <http://cwruchiellab.github.io/ArduinoPulseGenerator/>`_.
 
 
 Building the Software
